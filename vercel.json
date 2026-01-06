@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/logs.py": {
+      "runtime": "python3.11"
+    }
+  }
+}
+
