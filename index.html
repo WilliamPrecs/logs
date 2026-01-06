@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Logs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        #logs {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 600px;
+            overflow-y: auto;
+            color: #333;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+
+        .log-separator {
+            color: #999;
+            font-weight: bold;
+            margin: 12px 0 8px 0;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+        }
+
+        .log-important {
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .log-success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .log-data {
+            color: #7f8c8d;
+        }
+
+        .loading {
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .empty {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #5568d3;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+
+        .refresh-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h3 {
+                font-size: 20px;
+            }
+
+            #logs {
+                font-size: 12px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Logs</h3>
+        <pre id="logs" class="loading">Carregando logs...</pre>
+        <button id="refreshBtn" class="refresh-btn">Atualizar</button>
+    </div>
+
+    <script>
+        const API_RELATIVE = "/api/logs"; // endpoint serverless na Vercel
+        const API_FALLBACK = "https://auwb72k75qnn3ncgrchc6qpyv40kvdaa.lambda-url.sa-east-1.on.aws/"; // fallback direto
+        const LOCAL_PROXY = "http://localhost:9000/api/logs"; // proxy local opcional
+        const logsElement = document.getElementById("logs");
+        const refreshBtn = document.getElementById("refreshBtn");
+
+        // Função para fazer requisição com timeout
+        function fetchWithTimeout(url, options = {}, timeout = 10000) {
+            return Promise.race([
+                fetch(url, options),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout')), timeout)
+                )
+            ]);
+        }
+
+        // Função para fazer requisição tentando serverless /api/logs (Vercel), depois local proxy e fallback direto
+        async function fazerRequisicao(url) {
+            // 1. Serverless (Vercel) - mesmo domínio, sem CORS
+            try {
+                console.log("Tentando /api/logs (serverless)...");
+                const resp = await fetchWithTimeout(API_RELATIVE, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                }, 10000);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    console.log("✅ /api/logs funcionou!");
+                    return data;
+                }
+            } catch (err) {
+                console.log("Falha em /api/logs:", err.message);
+            }
+
+            // 2. Proxy local (útil para desenvolvimento)
+            try {
+                console.log("Tentando servidor proxy local...");
+                const localResponse = await fetchWithTimeout(LOCAL_PROXY, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                }, 3000); // Timeout curto para detectar se está disponível
+                
+                if (localResponse.ok) {
+                    const data = await localResponse.json();
+                    console.log("✅ Servidor proxy local funcionou!");
+                    return data;
+                }
+            } catch (localErr) {
+                console.log("Servidor proxy local não disponível:", localErr.message);
+            }
+
+            // 3. Tenta requisição direta (fallback)
+            try {
+                console.log("Tentando requisição direta...");
+                const directResponse = await fetchWithTimeout(API_FALLBACK, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors'
+                }, 10000);
+                
+                if (directResponse.ok) {
+                    const data = await directResponse.json();
+                    console.log("✅ Requisição direta funcionou!");
+                    return data;
+                }
+            } catch (directErr) {
+                console.log("Requisição direta falhou:", directErr.message);
+            }
+
+            // 3. Tenta proxies públicos como último recurso
+            const proxies = [
+                {
+                    name: 'allorigins',
+                    url: `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+                    parse: async (response) => {
+                        const data = await response.json();
+                        if (data.contents) {
+                            return JSON.parse(data.contents);
+                        }
+                        throw new Error("Resposta vazia do proxy");
+                    }
+                }
+            ];
+
+            for (const proxy of proxies) {
+                try {
+                    console.log(`Tentando proxy público: ${proxy.name}...`);
+                    
+                    const proxyResponse = await fetchWithTimeout(proxy.url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    }, 20000); // 20 segundos de timeout
+                    
+                    if (!proxyResponse.ok) {
+                        throw new Error(`Erro ${proxyResponse.status}: ${proxyResponse.statusText}`);
+                    }
+                    
+                    const parsedData = await proxy.parse(proxyResponse);
+                    console.log(`✅ Proxy ${proxy.name} funcionou!`);
+                    return parsedData;
+                    
+                } catch (err) {
+                    console.warn(`❌ Proxy ${proxy.name} falhou:`, err.message);
+                    continue;
+                }
+            }
+
+            // Se tudo falhou
+            throw new Error("Não foi possível carregar os logs. Execute 'python proxy_server.py' para usar o servidor proxy local.");
+        }
+
+        function formatarLogs(data) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                return "Sem logs nesse período";
+            }
+
+            let resultado = [];
+            let eventoAtual = null;
+            let dadosNegocio = null;
+            let jaMostrouDados = false;
+
+            // Filtros para mensagens que não queremos mostrar
+            const filtrarMensagens = [
+                "EVENTO COMPLETO:",
+                "TIPO DO BODY:",
+                "DADOS PARSEADOS:",
+                "DADOS PARA PROCESSAMENTO:",
+                "VALORES EXTRAÍDOS FINAIS:",
+                ">>> FORMATO SIMPLES DETECTADO",
+                ">>> ID_NEGOCIO ENCONTRADO - TENTANDO INSERIR NO BANCO",
+                "DATA CONVERTIDA:",
+                "ORÇAMENTO CONVERTIDO:",
+                '"version":',
+                '"routeKey":',
+                '"rawPath":',
+                '"rawQueryString":',
+                '"headers":',
+                '"requestContext":',
+                '"accountId":',
+                '"apiId":',
+                '"domainName":',
+                '"domainPrefix":',
+                '"http":',
+                '"method":',
+                '"path":',
+                '"protocol":',
+                '"sourceIp":',
+                '"userAgent":',
+                '"requestId":',
+                '"stage":',
+                '"time":',
+                '"timeEpoch":',
+                '"isBase64Encoded":',
+                '"x-amzn-',
+                '"content-length":',
+                '"content-type":',
+                '"accept-encoding":',
+                '"accept":',
+                '"x-forwarded-',
+                '"host":',
+                '"{',
+                '"}',
+                '"},',
+                '},',
+                '"body":',
+                'id_negocio:',
+                'proprietario:',
+                'data_evento:',
+                'id_etapa:',
+                'orcamento:',
+                'organizacao:',
+                'tribunal:',
+            ];
+
+            for (let i = 0; i < data.length; i++) {
+                const log = data[i];
+                const mensagem = log.mensagem.trim();
+                const dataHora = log.data;
+
+                // Pular mensagens filtradas
+                if (filtrarMensagens.some(filtro => mensagem.includes(filtro))) {
+                    continue;
+                }
+
+                // Detectar início de novo evento
+                if (mensagem === "==================================================") {
+                    if (eventoAtual && dadosNegocio) {
+                        // Mostrar resumo do evento anterior
+                        resultado.push(`  ✅ Processado com sucesso!`);
+                        resultado.push("");
+                    }
+                    eventoAtual = dataHora;
+                    dadosNegocio = null;
+                    jaMostrouDados = false;
+                    continue;
+                }
+
+                // Detectar WEBHOOK RECEBIDO
+                if (mensagem === "WEBHOOK RECEBIDO!") {
+                    resultado.push(`\n📥 WEBHOOK RECEBIDO - ${dataHora}`);
+                    resultado.push("─".repeat(70));
+                    continue;
+                }
+
+                // Detectar BODY ENCONTRADO (extrair dados do negócio)
+                if (mensagem.startsWith("BODY ENCONTRADO:")) {
+                    try {
+                        const jsonMatch = mensagem.match(/\{.*\}/);
+                        if (jsonMatch) {
+                            dadosNegocio = JSON.parse(jsonMatch[0]);
+                        }
+                    } catch (e) {
+                        // Ignorar erro de parse
+                    }
+                    continue;
+                }
+
+                // Detectar informações importantes do negócio (mostrar apenas uma vez)
+                if (!jaMostrouDados && dadosNegocio) {
+                    resultado.push(`\n  📋 DADOS DO NEGÓCIO:`);
+                    resultado.push(`     ID: ${dadosNegocio.id_negocio || 'N/A'}`);
+                    resultado.push(`     Proprietário: ${dadosNegocio.proprietario || 'N/A'}`);
+                    resultado.push(`     Organização: ${dadosNegocio.organizacao || 'N/A'}`);
+                    resultado.push(`     Tribunal: ${dadosNegocio.tribunal || 'N/A'}`);
+                    resultado.push(`     Etapa: ${dadosNegocio.id_etapa || 'N/A'}`);
+                    resultado.push(`     Orçamento: ${dadosNegocio.orcamento || 'N/A'}`);
+                    resultado.push(`     Data: ${dadosNegocio.data || 'N/A'}`);
+                    jaMostrouDados = true;
+                    continue;
+                }
+
+                // Detectar informações do negócio (formato alternativo)
+                if (mensagem.startsWith("ID NEGÓCIO:") || 
+                    mensagem.startsWith("PROPRIETÁRIO:") ||
+                    mensagem.startsWith("ORGANIZAÇÃO:") ||
+                    mensagem.startsWith("TRIBUNAL:") ||
+                    mensagem.startsWith("ID ETAPA:") ||
+                    mensagem.startsWith("ORÇAMENTO:") ||
+                    mensagem.startsWith("DATA:")) {
+                    if (!jaMostrouDados) {
+                        // Extrair apenas o valor após os dois pontos
+                        const valor = mensagem.split(':').slice(1).join(':').trim();
+                        const campo = mensagem.split(':')[0].trim();
+                        if (!resultado.some(r => r.includes(campo))) {
+                            resultado.push(`  ${mensagem}`);
+                        }
+                    }
+                    continue;
+                }
+
+                // Detectar sucesso
+                if (mensagem.includes("DADOS INSERIDOS NO BANCO COM SUCESSO")) {
+                    continue; // Já mostramos o sucesso no resumo
+                }
+
+                // Mostrar outras mensagens importantes (mas não JSON)
+                if (mensagem && 
+                    !mensagem.startsWith('"') && 
+                    !mensagem.endsWith('",') && 
+                    !mensagem.endsWith('}') &&
+                    !mensagem.startsWith('{') &&
+                    mensagem.length > 2 &&
+                    !mensagem.match(/^[\s\S]*\{[\s\S]*\}/)) {
+                    resultado.push(`  ${mensagem}`);
+                }
+            }
+
+            // Adicionar resumo do último evento se houver
+            if (eventoAtual && dadosNegocio && !jaMostrouDados) {
+                resultado.push(`\n  📋 DADOS DO NEGÓCIO:`);
+                resultado.push(`     ID: ${dadosNegocio.id_negocio || 'N/A'}`);
+                resultado.push(`     Proprietário: ${dadosNegocio.proprietario || 'N/A'}`);
+                resultado.push(`     Organização: ${dadosNegocio.organizacao || 'N/A'}`);
+                resultado.push(`     Tribunal: ${dadosNegocio.tribunal || 'N/A'}`);
+                resultado.push(`     Etapa: ${dadosNegocio.id_etapa || 'N/A'}`);
+                resultado.push(`     Orçamento: ${dadosNegocio.orcamento || 'N/A'}`);
+                resultado.push(`     Data: ${dadosNegocio.data || 'N/A'}`);
+            }
+
+            if (eventoAtual) {
+                resultado.push(`\n  ✅ Processado com sucesso!`);
+            }
+
+            return resultado.length > 0 ? resultado.join("\n") : "Sem logs relevantes para exibir";
+        }
+
+        async function carregarLogs() {
+            logsElement.classList.remove("error", "empty");
+            logsElement.classList.add("loading");
+            logsElement.textContent = "Carregando logs...";
+            refreshBtn.disabled = true;
+
+            try {
+                const data = await fazerRequisicao(API_URL);
+                
+                logsElement.classList.remove("loading");
+                refreshBtn.disabled = false;
+                
+                if (data && Array.isArray(data) && data.length > 0) {
+                    logsElement.textContent = formatarLogs(data);
+                } else {
+                    logsElement.classList.add("empty");
+                    logsElement.textContent = "Sem logs nesse período";
+                }
+            } catch (err) {
+                logsElement.classList.remove("loading");
+                logsElement.classList.add("error");
+                refreshBtn.disabled = false;
+                
+                let mensagemErro = "Erro ao carregar logs.\n\n";
+                
+                if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
+                    mensagemErro += "Possíveis causas:\n";
+                    mensagemErro += "• Problema de conexão com a internet\n";
+                    mensagemErro += "• A API pode estar temporariamente indisponível\n";
+                    mensagemErro += "• Problema de CORS bloqueado\n";
+                    mensagemErro += "• Firewall ou antivírus bloqueando a requisição\n\n";
+                    mensagemErro += "Soluções:\n";
+                    mensagemErro += "1. Execute o servidor Python: python server.py\n";
+                    mensagemErro += "2. Ou use Live Server no VS Code\n";
+                    mensagemErro += "3. Verifique sua conexão com a internet\n";
+                    mensagemErro += "4. Verifique se a URL está acessível no navegador";
+                } else {
+                    mensagemErro += `Detalhes: ${err.message}`;
+                }
+                
+                logsElement.textContent = mensagemErro;
+                console.error("Erro completo:", err);
+            }
+        }
+
+        // Carregar logs ao carregar a página
+        carregarLogs();
+
+        // Botão de atualização
+        refreshBtn.addEventListener("click", carregarLogs);
+    </script>
+</body>
+</html>
+
