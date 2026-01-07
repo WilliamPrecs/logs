@@ -1110,11 +1110,15 @@
             return resumo.join('\n');
         }
 
+        // Flag para controlar primeira carga
+        let primeiraCarga = true;
+
         async function carregarLogs() {
             const logsEl = document.getElementById('logs');
             const terminalEl = document.getElementById('terminal');
             
-            if (logsEl) {
+            // Só mostra "Carregando..." na primeira vez
+            if (logsEl && primeiraCarga) {
                 logsEl.textContent = ">>> Carregando dados do sistema...\n>>> Conectando ao servidor...\n>>> Aguarde...";
             }
 
@@ -1125,47 +1129,80 @@
                     // Processar logs de webhooks e atualizar terminal "Metas Diárias"
                     if (logsEl) {
                         const resumoMetas = processarLogsMetasDiarias(data);
-                        logsEl.textContent = resumoMetas || '> Nenhum evento de negócio registrado';
+                        const novoConteudo = resumoMetas || '> Nenhum evento de negócio registrado';
+                        // Só atualiza se o conteúdo mudou (evita piscar)
+                        if (logsEl.textContent !== novoConteudo) {
+                            logsEl.textContent = novoConteudo;
+                        }
                     }
                     
                     // Processar logs de movimentacoesWilliam e atualizar terminal "Saldo em Conta"
                     if (terminalEl) {
                         const resumoMovimentacoes = processarLogsMovimentacoes(data);
-                        terminalEl.textContent = resumoMovimentacoes || '> Nenhuma operação de movimentações registrada';
+                        const novoConteudoTerminal = resumoMovimentacoes || '> Nenhuma operação de movimentações registrada';
+                        // Só atualiza se o conteúdo mudou (evita piscar)
+                        if (terminalEl.textContent !== novoConteudoTerminal) {
+                            terminalEl.textContent = novoConteudoTerminal;
+                        }
                     }
                 } else {
                     if (logsEl) {
-                        logsEl.textContent = '> Nenhum evento registrado 10 minutos atrás.\n> STATUS: Aguardando novos eventos...\n> Pressione [F5] para atualizar.';
+                        const msgVazio = '> Nenhum evento registrado 10 minutos atrás.\n> STATUS: Aguardando novos eventos...\n> Pressione [F5] para atualizar.';
+                        if (logsEl.textContent !== msgVazio) {
+                            logsEl.textContent = msgVazio;
+                        }
                     }
                     if (terminalEl) {
-                        terminalEl.textContent = '> Nenhuma operação de movimentações registrada';
+                        const msgVazioTerminal = '> Nenhuma operação de movimentações registrada';
+                        if (terminalEl.textContent !== msgVazioTerminal) {
+                            terminalEl.textContent = msgVazioTerminal;
+                        }
                     }
                 }
+                
+                // Marca que a primeira carga foi concluída
+                primeiraCarga = false;
             } catch (err) {
-                logsElement.classList.remove("loading");
-                logsElement.classList.add("error");
-                
-                let mensagemErro = ">>> ERRO CRITICO: Falha na comunicacao com o servidor\n";
-                mensagemErro += ">>> " + "=".repeat(74) + "\n\n";
-                
-                if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-                    mensagemErro += ">>> DIAGNOSTICO:\n";
-                    mensagemErro += ">>>   - Problema de conexao detectado\n";
-                    mensagemErro += ">>>   - Servidor pode estar offline\n";
-                    mensagemErro += ">>>   - Firewall bloqueando requisicao\n\n";
-                    mensagemErro += ">>> ACOES RECOMENDADAS:\n";
-                    mensagemErro += ">>>   1. Verificar conexao de rede\n";
-                    mensagemErro += ">>>   2. Contatar administrador do sistema\n";
-                    mensagemErro += ">>>   3. Pressionar [F5] para tentar novamente\n";
-                } else {
-                    mensagemErro += `>>> DETALHES: ${err.message}\n`;
-                    mensagemErro += ">>> Pressione [F5] para tentar novamente\n";
+                if (logsEl) {
+                    logsEl.classList.remove("loading");
+                    logsEl.classList.add("error");
+                    
+                    let mensagemErro = ">>> ERRO CRITICO: Falha na comunicacao com o servidor\n";
+                    mensagemErro += ">>> " + "=".repeat(74) + "\n\n";
+                    
+                    if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
+                        mensagemErro += ">>> DIAGNOSTICO:\n";
+                        mensagemErro += ">>>   - Problema de conexao detectado\n";
+                        mensagemErro += ">>>   - Servidor pode estar offline\n";
+                        mensagemErro += ">>>   - Firewall bloqueando requisicao\n\n";
+                        mensagemErro += ">>> ACOES RECOMENDADAS:\n";
+                        mensagemErro += ">>>   1. Verificar conexao de rede\n";
+                        mensagemErro += ">>>   2. Contatar administrador do sistema\n";
+                        mensagemErro += ">>>   3. Pressionar [F5] para tentar novamente\n";
+                    } else {
+                        mensagemErro += `>>> DETALHES: ${err.message}\n`;
+                        mensagemErro += ">>> Pressione [F5] para tentar novamente\n";
+                    }
+                    
+                    mensagemErro += "\n>>> " + "=".repeat(74);
+                    
+                    // Só atualiza se o conteúdo mudou (evita piscar)
+                    if (logsEl.textContent !== mensagemErro) {
+                        logsEl.textContent = mensagemErro;
+                    }
                 }
                 
-                mensagemErro += "\n>>> " + "=".repeat(74);
+                if (terminalEl) {
+                    terminalEl.classList.remove("loading");
+                    terminalEl.classList.add("error");
+                    const msgErroTerminal = "> ERRO: Falha ao carregar dados de movimentações.";
+                    if (terminalEl.textContent !== msgErroTerminal) {
+                        terminalEl.textContent = msgErroTerminal;
+                    }
+                }
                 
-                logsElement.textContent = mensagemErro;
                 console.error("Erro completo:", err);
+                primeiraCarga = false;
             }
         }
 
