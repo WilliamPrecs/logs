@@ -73,21 +73,21 @@
             top: 5px;
             left: 5px;
             width: calc(100% - 10px);
-            height: 30%;
+            height: calc(50% - 7px);
         }
 
         #card-mensal {
-            top: calc(30% + 10px);
+            top: calc(50% + 3px);
             left: 5px;
             width: calc(50% - 7px);
-            height: 45%;
+            height: calc(50% - 8px);
         }
 
         #card-comercial {
-            top: calc(30% + 10px);
+            top: calc(50% + 3px);
             left: calc(50% + 3px);
             width: calc(50% - 8px);
-            height: 45%;
+            height: calc(50% - 8px);
         }
 
         .card-header {
@@ -247,7 +247,7 @@
     </style>
 </head>
 <body>
-    <h3>SISTEMA DE MONITORAMENTO <span id="autoRefreshStatus" style="font-size: 14px; float: right; color: #00aa00;">[↻ 10s]</span></h3>
+    <h3>SISTEMA DE MONITORAMENTO <span id="autoRefreshStatus" style="font-size: 14px; float: right; color: #00aa00;">↻ 10s</span></h3>
 
     <div class="container">
         <!-- Card de Logs -->
@@ -265,7 +265,7 @@
         <div id="card-mensal" class="card">
             <div class="card-header">
                 <span>[2] DASHBOARD METAS DIÁRIAS</span>
-                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/mensalPowerBI/')">[TELA CHEIA]</button>
+                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/mensalPowerBI/')">TELA CHEIA</button>
             </div>
             <div class="card-content">
                 <iframe src="https://williamprecs.github.io/mensalPowerBI/" frameborder="0" class="dashboard-iframe"></iframe>
@@ -276,7 +276,7 @@
         <div id="card-comercial" class="card">
             <div class="card-header">
                 <span>[3] DASHBOARD METAS MENSAIS</span>
-                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/comercialPrecsPowerBI/')">[TELA CHEIA]</button>
+                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/comercialPrecsPowerBI/')">TELA CHEIA</button>
             </div>
             <div class="card-content">
                 <iframe src="https://williamprecs.github.io/comercialPrecsPowerBI/" frameborder="0" class="dashboard-iframe"></iframe>
