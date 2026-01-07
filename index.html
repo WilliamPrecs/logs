@@ -1011,24 +1011,29 @@
                     valor = limparValor(valor);
                     resumo.push(`> PROPRIETÁRIO: ${valor}`);
                 } else if (linha.startsWith("DATA:")) {
+                    // Extrair valor preservando os dois pontos do horário
                     let valor = linha.split(':').slice(1).join(':').trim();
-                    valor = limparValor(valor);
-                    dataExtraida = valor;
                     
-                    // Verificar se já tem minutos no formato "HH:MM" ou "HH:MM:SS"
-                    const temMinutos = /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(valor);
+                    // Extrair a parte de data/hora antes de aplicar limparValor
+                    // Formato esperado: "2026-01-07 14:30 (campo: data)" ou "2026-01-07 14:30:45 (campo: data)"
+                    const matchDataHoraCompleta = valor.match(/^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/);
                     
-                    // Se não tiver minutos, tentar completar apenas se realmente faltar
-                    if (!temMinutos) {
-                        // Verifica se tem formato "YYYY-MM-DD HH" (apenas hora, sem minutos)
+                    if (matchDataHoraCompleta) {
+                        // Se encontrou data/hora completa, usar apenas essa parte
+                        valor = matchDataHoraCompleta[1];
+                    } else {
+                        // Se não encontrou formato completo, tentar extrair e limpar
+                        valor = limparValor(valor);
+                        
+                        // Verificar se tem formato "YYYY-MM-DD HH" (apenas hora, sem minutos)
                         const matchDataHora = valor.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2})$/);
                         if (matchDataHora) {
                             // Completa com ":00" apenas se realmente não tiver minutos
                             valor = `${matchDataHora[1]} ${matchDataHora[2]}:00`;
                         }
                     }
-                    // Se já tiver minutos, preserva o valor original (não faz nada)
                     
+                    dataExtraida = valor;
                     resumo.push(`> DATA: ${valor}`);
                 } else if (linha.startsWith("ID ETAPA:")) {
                     let valor = linha.split(':').slice(1).join(':').trim();
