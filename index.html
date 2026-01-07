@@ -444,7 +444,7 @@
             refreshBtn.disabled = true;
 
             try {
-                const data = await fazerRequisicao(API_URL);
+                const data = await fazerRequisicao(API_FALLBACK);
                 
                 logsElement.classList.remove("loading");
                 refreshBtn.disabled = false;
