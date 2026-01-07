@@ -489,6 +489,52 @@
             throw new Error("Não foi possível carregar os logs. Execute 'python proxy_server.py' para usar o servidor proxy local.");
         }
 
+        // Função para ajustar horário -3 horas (UTC para horário de Brasília)
+        function ajustarHorario(dataHora) {
+            try {
+                // Formato esperado: "2026-01-07 14:30:25" ou "2026-01-07 14:30"
+                const [data, hora] = dataHora.split(' ');
+                if (!data || !hora) return dataHora;
+                
+                const [ano, mes, dia] = data.split('-');
+                const partesHora = hora.split(':');
+                const h = parseInt(partesHora[0]) || 0;
+                const m = parseInt(partesHora[1]) || 0;
+                const s = parseInt(partesHora[2]) || 0;
+                
+                // Criar objeto Date (assumindo UTC)
+                const dataObj = new Date(Date.UTC(
+                    parseInt(ano),
+                    parseInt(mes) - 1,
+                    parseInt(dia),
+                    h,
+                    m,
+                    s
+                ));
+                
+                // Subtrair 3 horas
+                dataObj.setUTCHours(dataObj.getUTCHours() - 3);
+                
+                // Formatar de volta para o formato original
+                const anoAjustado = dataObj.getUTCFullYear();
+                const mesAjustado = String(dataObj.getUTCMonth() + 1).padStart(2, '0');
+                const diaAjustado = String(dataObj.getUTCDate()).padStart(2, '0');
+                const horaAjustada = String(dataObj.getUTCHours()).padStart(2, '0');
+                const minAjustado = String(dataObj.getUTCMinutes()).padStart(2, '0');
+                const segAjustado = String(dataObj.getUTCSeconds()).padStart(2, '0');
+                
+                // Retornar no mesmo formato que recebeu (com ou sem segundos)
+                if (partesHora.length === 2) {
+                    return `${anoAjustado}-${mesAjustado}-${diaAjustado} ${horaAjustada}:${minAjustado}`;
+                } else {
+                    return `${anoAjustado}-${mesAjustado}-${diaAjustado} ${horaAjustada}:${minAjustado}:${segAjustado}`;
+                }
+            } catch (e) {
+                console.error('Erro ao ajustar horário:', e);
+                return dataHora;
+            }
+        }
+
         function formatarLogsHTML(data) {
             if (!data || !Array.isArray(data) || data.length === 0) {
                 return '<span style="color: #ffaa00;">>>> Nenhum evento encontrado</span>';
@@ -506,7 +552,8 @@
                     if (eventoAtual) {
                         eventos.push(eventoAtual);
                     }
-                    eventoAtual = { data: log.data, linhas: [] };
+                    // Ajustar horário ao criar o evento
+                    eventoAtual = { data: ajustarHorario(log.data), linhas: [] };
                     continue;
                 }
 
@@ -559,7 +606,11 @@
                         const valor = linha.split(':')[1].trim();
                         html += `<div style="color: #ffaa00;">  > ORÇAMENTO: <span style="color: #ffffff; font-weight: bold;">${valor}</span></div>`;
                     } else if (linha.startsWith("DATA:")) {
-                        const valor = linha.split(':').slice(1).join(':').trim();
+                        let valor = linha.split(':').slice(1).join(':').trim();
+                        // Ajustar horário se estiver no formato de data/hora
+                        if (valor.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)) {
+                            valor = ajustarHorario(valor);
+                        }
                         html += `<div style="color: #aaaaaa;">  > DATA: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.includes("SUCESSO")) {
                         html += `<div style="color: #00ff00; font-weight: bold; margin-top: 5px;">  >>> ${linha}</div>`;
