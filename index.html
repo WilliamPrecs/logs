@@ -170,6 +170,11 @@
             /* Esconder barra padrão */
             scrollbar-width: none; /* Firefox */
             -ms-overflow-style: none; /* IE/Edge */
+            /* Otimizações para evitar piscar */
+            will-change: contents;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* Esconder barra padrão no Webkit */
@@ -287,6 +292,11 @@
             scrollbar-width: thin;
             scrollbar-color: #00ff00 #000000;
             padding-right: 20px;
+            /* Otimizações para evitar piscar */
+            will-change: contents;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* Barra de rolagem estilizada para terminal - Webkit */
