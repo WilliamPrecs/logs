@@ -1259,24 +1259,58 @@
             }
             
             // Se não encontrou corpo de requisição, tentar extrair dos logs processados
+            // Processar do mais recente para pegar o último evento completo
             if (Object.keys(dadosCorpo).length === 0) {
+                // Procurar pelo último evento que terminou com sucesso
+                let encontrouSucesso = false;
                 for (let i = logsDiscador.length - 1; i >= 0; i--) {
                     const log = logsDiscador[i];
                     const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
                     
-                    if (msg.includes('tribunal:')) {
-                        dadosCorpo.tribunal = msg.split(':')[1]?.trim() || null;
-                    } else if (msg.includes('DATA CONVERTIDA:')) {
-                        dadosCorpo.data = msg.split(':').slice(1).join(':').trim() || null;
-                    } else if (msg.includes('ORÇAMENTO CONVERTIDO:')) {
-                        dadosCorpo.orcamento = msg.split(':')[1]?.trim() || null;
-                    } else if (msg.includes('ID_NEGOCIO ENCONTRADO')) {
-                        const match = msg.match(/ID_NEGOCIO[:\s]+(\d+)/i);
-                        if (match) dadosCorpo.id_negocio = match[1];
-                    }
-                    
-                    if (Object.keys(dadosCorpo).length > 0 && !ultimaHora) {
+                    // Se encontrou sucesso, começar a coletar dados desse evento
+                    if (msg.includes('DADOS INSERIDOS NO BANCO COM SUCESSO')) {
+                        encontrouSucesso = true;
                         ultimaHora = ajustarHorario(log.data);
+                        // Agora processar para trás para pegar os dados desse evento
+                        for (let j = i; j >= Math.max(0, i - 20); j--) {
+                            const logAnterior = logsDiscador[j];
+                            const msgAnterior = logAnterior.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
+                            
+                            if (msgAnterior.includes('tribunal:')) {
+                                dadosCorpo.tribunal = msgAnterior.split(':')[1]?.trim() || null;
+                            } else if (msgAnterior.includes('DATA CONVERTIDA:')) {
+                                dadosCorpo.data = msgAnterior.split(':').slice(1).join(':').trim() || null;
+                            } else if (msgAnterior.includes('ORÇAMENTO CONVERTIDO:')) {
+                                dadosCorpo.orcamento = msgAnterior.split(':')[1]?.trim() || null;
+                            } else if (msgAnterior.includes('ID_NEGOCIO ENCONTRADO')) {
+                                const match = msgAnterior.match(/ID_NEGOCIO[:\s]+(\d+)/i);
+                                if (match) dadosCorpo.id_negocio = match[1];
+                            }
+                        }
+                        break;
+                    }
+                }
+                
+                // Se não encontrou sucesso, pegar os dados mais recentes disponíveis
+                if (!encontrouSucesso) {
+                    for (let i = logsDiscador.length - 1; i >= 0; i--) {
+                        const log = logsDiscador[i];
+                        const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
+                        
+                        if (msg.includes('tribunal:') && !dadosCorpo.tribunal) {
+                            dadosCorpo.tribunal = msg.split(':')[1]?.trim() || null;
+                        } else if (msg.includes('DATA CONVERTIDA:') && !dadosCorpo.data) {
+                            dadosCorpo.data = msg.split(':').slice(1).join(':').trim() || null;
+                        } else if (msg.includes('ORÇAMENTO CONVERTIDO:') && !dadosCorpo.orcamento) {
+                            dadosCorpo.orcamento = msg.split(':')[1]?.trim() || null;
+                        } else if (msg.includes('ID_NEGOCIO ENCONTRADO') && !dadosCorpo.id_negocio) {
+                            const match = msg.match(/ID_NEGOCIO[:\s]+(\d+)/i);
+                            if (match) dadosCorpo.id_negocio = match[1];
+                        }
+                        
+                        if (Object.keys(dadosCorpo).length > 0 && !ultimaHora) {
+                            ultimaHora = ajustarHorario(log.data);
+                        }
                     }
                 }
             }
