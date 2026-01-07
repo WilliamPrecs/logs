@@ -26,24 +26,24 @@
             height: calc(100vh - 40px);
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto 1fr;
-            gap: 20px;
+            grid-template-rows: auto auto 1fr;
+            gap: 10px;
         }
 
         h3 {
             color: #00ff00;
-            font-size: 32px;
+            font-size: 20px;
             font-weight: normal;
-            margin-bottom: 20px;
-            padding: 15px 20px;
+            padding: 10px 15px;
             border: 2px solid #00ff00;
             background: #001100;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
+            margin: 0;
         }
 
         h3::before {
-            content: 'C:\\> ';
+            content: '> ';
             color: #00aa00;
         }
 
@@ -51,35 +51,35 @@
             grid-column: 1 / -1;
             display: flex;
             flex-direction: column;
-            max-height: 35vh;
-            border: 2px solid #00ff00;
+            max-height: 20vh;
+            border: 1px solid #00ff00;
             background: #000000;
         }
 
         .secao-dashboard {
             display: flex;
             flex-direction: column;
-            border: 2px solid #00ff00;
+            border: 1px solid #00ff00;
             background: #000000;
             min-height: 0;
+            overflow: hidden;
         }
 
         .secao-header {
             background: #00ff00;
             color: #000000;
-            padding: 10px 20px;
-            font-size: 18px;
+            padding: 5px 15px;
+            font-size: 14px;
             font-weight: bold;
-            letter-spacing: 2px;
-            border-bottom: 2px solid #00ff00;
+            letter-spacing: 1px;
         }
 
         #logs {
             background: #000000;
-            padding: 20px;
+            padding: 10px;
             font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 18px;
-            line-height: 1.5;
+            font-size: 14px;
+            line-height: 1.4;
             white-space: pre-wrap;
             word-wrap: break-word;
             flex: 1;
@@ -148,10 +148,12 @@
 
         .dashboard-iframe {
             width: 100%;
+            height: 100%;
             flex: 1;
             border: none;
             background: #000000;
             min-height: 0;
+            display: block;
         }
 
         @keyframes blink {
@@ -181,7 +183,7 @@
 </head>
 <body>
     <div class="container">
-        <h3 style="grid-column: 1 / -1;">Monitor de Logs - Sistema em Execução <span id="autoRefreshStatus" style="font-size: 16px; float: right; color: #00aa00;">[Auto-refresh: 10s]</span></h3>
+        <h3 style="grid-column: 1 / -1;">SISTEMA DE MONITORAMENTO <span id="autoRefreshStatus" style="font-size: 12px; float: right; color: #00aa00;">[↻ 10s]</span></h3>
         
         <div class="secao-logs">
             <div class="secao-header">[1] LOGS DO SISTEMA</div>
@@ -560,7 +562,7 @@
             setInterval(() => {
                 countdown--;
                 if (countdown <= 0) countdown = 10;
-                document.getElementById('autoRefreshStatus').textContent = `[Auto-refresh: ${countdown}s]`;
+                document.getElementById('autoRefreshStatus').textContent = `[↻ ${countdown}s]`;
             }, 1000);
         }
 
