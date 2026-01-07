@@ -153,40 +153,51 @@
 
         #logs {
             background: #000000;
-            padding: 15px;
-            padding-right: 35px; /* Espaço para barra customizada */
+            padding: 0;
             font-family: 'Consolas', 'Courier New', monospace;
             font-size: 15px;
             line-height: 1.5;
-            white-space: pre-wrap;
-            word-wrap: break-word;
             flex: 1;
-            overflow-y: auto;
+            overflow: hidden;
             overflow-x: hidden;
             color: #00ff00;
             margin: 0;
-            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
-            scroll-behavior: smooth;
-            /* Esconder barra padrão */
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
+            position: relative;
+            height: 100%;
         }
 
-        /* Esconder barra padrão no Webkit */
-        #logs::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Barra de rolagem customizada */
-        .custom-scrollbar {
+        /* Container para o conteúdo com scroll automático */
+        .logs-content {
             position: absolute;
-            right: 5px;
-            top: 0;
-            bottom: 0;
-            width: 12px;
-            background: #000000;
-            border-left: 2px solid #003300;
-            z-index: 10;
+            top: 100%;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+            animation: scroll-down 40s linear infinite;
+            will-change: transform;
+        }
+
+        /* Pausar animação no hover */
+        #logs:hover .logs-content {
+            animation-play-state: paused;
+        }
+
+        /* Animação de scroll automático vertical - começa de baixo e sobe */
+        @keyframes scroll-down {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-50%); /* Move metade do conteúdo (já que duplicamos para loop infinito) */
+            }
+        }
+
+        /* Barra de rolagem customizada - escondida pois usamos CSS animations */
+        .custom-scrollbar {
+            display: none;
         }
 
         .custom-scrollbar-track {
@@ -441,7 +452,9 @@
                 <span>[1] LOGS DO SISTEMA</span>
             </div>
             <div class="card-content">
-                <pre id="logs" class="loading">Inicializando sistema... Aguarde...</pre>
+                <div id="logs">
+                    <div class="logs-content loading">Inicializando sistema... Aguarde...</div>
+                </div>
                 <div class="custom-scrollbar" id="scrollbar-logs">
                     <div class="custom-scrollbar-track">
                         <div class="custom-scrollbar-thumb" id="scrollbar-thumb-logs"></div>
@@ -476,6 +489,7 @@
         const API_FALLBACK = "https://auwb72k75qnn3ncgrchc6qpyv40kvdaa.lambda-url.sa-east-1.on.aws/"; // fallback direto
         const LOCAL_PROXY = "http://localhost:9000/api/logs"; // proxy local opcional
         const logsElement = document.getElementById("logs");
+        const logsContentElement = logsElement ? logsElement.querySelector('.logs-content') : null;
 
         // Função para fazer requisição com timeout
         function fetchWithTimeout(url, options = {}, timeout = 10000) {
@@ -639,7 +653,7 @@
                 return '<span style="color: #ffaa00;">>>> Nenhum evento encontrado</span>';
             }
 
-            let html = '<div style="color: #00ff00;">' + "=".repeat(80) + '</div>\n';
+            let html = '<div style="color: #00ff00;">' + "=".repeat(1) + '</div>';
             let eventos = [];
             let eventoAtual = null;
 
@@ -681,7 +695,7 @@
             const eventosRecentes = eventos.slice(-3);
 
             eventosRecentes.forEach((evento, idx) => {
-                html += `\n<div style="margin-bottom: 15px;">`;
+                html += `<div style="margin-bottom: 15px;">`;
                 html += `<div style="color: #00ffff; font-weight: bold; font-size: 16px;">>> WEBHOOK #${eventos.length - eventosRecentes.length + idx + 1} - ${evento.data}</div>`;
                 html += `<div style="color: #00aa00; margin: 5px 0;">${"─".repeat(70)}</div>`;
 
@@ -908,28 +922,25 @@
         }
 
         async function carregarLogs() {
-            logsElement.classList.remove("error", "empty");
-            logsElement.classList.add("loading");
-            logsElement.textContent = ">>> Carregando dados do sistema...\n>>> Conectando ao servidor...\n>>> Aguarde...";
+            const contentEl = document.querySelector('.logs-content');
+            if (!contentEl) return;
+            
+            contentEl.classList.remove("error", "empty");
+            contentEl.classList.add("loading");
+            contentEl.innerHTML = ">>> Carregando dados do sistema...<br>>> Conectando ao servidor...<br>>> Aguarde...";
 
             try {
                 const data = await fazerRequisicao(API_FALLBACK);
                 
-                logsElement.classList.remove("loading");
+                contentEl.classList.remove("loading");
                 
                 if (data && Array.isArray(data) && data.length > 0) {
-                    logsElement.innerHTML = formatarLogsHTML(data);
-                    // Atualizar scrollbar e reiniciar rolagem automática
-                    setTimeout(() => {
-                        // Resetar para o topo
-                        logsElement.scrollTop = 0;
-                        atualizarScrollbarCustomizada();
-                        // Reiniciar rolagem automática após carregar novos logs
-                        iniciarRolagemAutomatica();
-                    }, 500);
+                    const htmlContent = formatarLogsHTML(data);
+                    // Duplicar conteúdo para criar loop infinito na animação
+                    contentEl.innerHTML = htmlContent + htmlContent;
                 } else {
-                    logsElement.classList.add("empty");
-                    logsElement.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado 10 minutos atrás.</span>\n<span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span>\n<span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
+                    contentEl.classList.add("empty");
+                    contentEl.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado 10 minutos atrás.</span><br><span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span><br><span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
                 }
             } catch (err) {
                 logsElement.classList.remove("loading");
@@ -1150,139 +1161,15 @@
             window.open(url, '_blank', 'noopener,noreferrer');
         }
 
-        // Barra de rolagem customizada e rolagem automática contínua
-        let autoScrollInterval = null;
-        let isPaused = false;
-        let scrollPosition = 0;
+        // Barra de rolagem customizada (scroll automático agora é via CSS)
 
+        // Função mantida para compatibilidade, mas não é mais necessária com CSS animations
         function atualizarScrollbarCustomizada() {
-            const logsEl = document.getElementById('logs');
-            const thumbEl = document.getElementById('scrollbar-thumb-logs');
-            const scrollbarEl = document.getElementById('scrollbar-logs');
-            
-            if (!logsEl || !thumbEl || !scrollbarEl) return;
-            
-            const scrollHeight = logsEl.scrollHeight;
-            const clientHeight = logsEl.clientHeight;
-            const scrollTop = logsEl.scrollTop;
-            
-            if (scrollHeight <= clientHeight) {
-                scrollbarEl.style.display = 'none';
-                return;
-            }
-            
-            scrollbarEl.style.display = 'block';
-            
-            // Calcular altura e posição do thumb
-            const thumbHeight = (clientHeight / scrollHeight) * clientHeight;
-            const thumbTop = (scrollTop / (scrollHeight - clientHeight)) * (clientHeight - thumbHeight);
-            
-            thumbEl.style.height = Math.max(thumbHeight, 40) + 'px';
-            thumbEl.style.top = thumbTop + 'px';
+            // Scroll agora é feito via CSS, não precisa mais atualizar barra
         }
 
-        function iniciarRolagemAutomatica() {
-            // Parar intervalo anterior
-            if (autoScrollInterval) {
-                clearInterval(autoScrollInterval);
-                autoScrollInterval = null;
-            }
-            
-            const logsEl = document.getElementById('logs');
-            if (!logsEl) {
-                console.log('Elemento logs não encontrado, tentando novamente em 500ms...');
-                setTimeout(iniciarRolagemAutomatica, 500);
-                return;
-            }
-            
-            // Resetar posição
-            scrollPosition = 0;
-            logsEl.scrollTop = 0;
-            isPaused = false;
-            
-            console.log('Iniciando rolagem automática...');
-            
-            // Rolagem automática - implementação direta e garantida
-            autoScrollInterval = setInterval(function() {
-                const el = document.getElementById('logs');
-                if (!el) {
-                    console.log('Elemento não encontrado no intervalo');
-                    return;
-                }
-                
-                const scrollHeight = el.scrollHeight;
-                const clientHeight = el.clientHeight;
-                const maxScroll = scrollHeight - clientHeight;
-                
-                // Se não há conteúdo para rolar, apenas atualiza scrollbar
-                if (maxScroll <= 0) {
-                    atualizarScrollbarCustomizada();
-                    return;
-                }
-                
-                // Se não está pausado, rola para baixo
-                if (!isPaused) {
-                    scrollPosition += 2; // Incrementa 2px por vez
-                    
-                    // Se chegou ao final, volta ao topo
-                    if (scrollPosition >= maxScroll) {
-                        scrollPosition = 0;
-                    }
-                    
-                    // Aplica a rolagem
-                    el.scrollTop = scrollPosition;
-                    atualizarScrollbarCustomizada();
-                }
-            }, 50); // Executa a cada 50ms
-            
-            // Adicionar listeners para pausar quando usuário interage
-            logsEl.addEventListener('mouseenter', function() {
-                isPaused = true;
-            }, { once: false });
-            
-            logsEl.addEventListener('mouseleave', function() {
-                isPaused = false;
-            }, { once: false });
-            
-            logsEl.addEventListener('wheel', function() {
-                isPaused = true;
-                scrollPosition = logsEl.scrollTop;
-                setTimeout(() => {
-                    isPaused = false;
-                }, 2000);
-            }, { once: false });
-            
-            console.log('Rolagem automática ATIVA!');
-        }
-
-        // Função para inicializar rolagem automática
-        function inicializarRolagem() {
-            const logsEl = document.getElementById('logs');
-            if (logsEl) {
-                logsEl.scrollTop = 0;
-                atualizarScrollbarCustomizada();
-                iniciarRolagemAutomatica();
-            }
-        }
-        
-        // Inicializar quando DOM estiver pronto
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(inicializarRolagem, 1000);
-            });
-        } else {
-            setTimeout(inicializarRolagem, 1000);
-        }
-        
-        // Também quando a página carregar completamente
-        window.addEventListener('load', function() {
-            setTimeout(inicializarRolagem, 1500);
-        });
-        
-        // E garantir após 3 segundos (quando logs provavelmente já carregaram)
-        setTimeout(function() {
-            iniciarRolagemAutomatica();
-        }, 3000);
+        // Scroll automático agora é feito via CSS animations
+        // Não precisa mais de JavaScript para isso
     </script>
 </body>
 </html>
