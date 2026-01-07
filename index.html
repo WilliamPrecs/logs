@@ -628,30 +628,39 @@
                 html += `<div style="color: #00aa00; margin: 5px 0;">${"─".repeat(70)}</div>`;
 
                 evento.linhas.forEach(linha => {
+                    // Função auxiliar para limpar valor removendo "(campo: ..."
+                    const limparValor = (valor) => {
+                        return valor.replace(/\s*\(campo:.*?\)/gi, '').trim();
+                    };
+                    
                     if (linha.startsWith("ID NEGÓCIO:")) {
-                        const valor = linha.split(':')[1].trim();
+                        let valor = linha.split(':')[1].trim();
+                        valor = limparValor(valor);
                         html += `<div style="color: #ffff00; font-weight: bold;">  > ID NEGÓCIO: <span style="color: #ffffff; font-size: 17px;">${valor}</span></div>`;
                     } else if (linha.startsWith("PROPRIETÁRIO:")) {
-                        const valor = linha.split(':').slice(1).join(':').trim();
+                        let valor = linha.split(':').slice(1).join(':').trim();
+                        valor = limparValor(valor);
                         html += `<div style="color: #00ffaa;">  > PROPRIETÁRIO: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.startsWith("ORGANIZAÇÃO:")) {
-                        const valor = linha.split(':').slice(1).join(':').trim();
+                        let valor = linha.split(':').slice(1).join(':').trim();
+                        valor = limparValor(valor);
                         html += `<div style="color: #00ffaa;">  > ORGANIZAÇÃO: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.startsWith("TRIBUNAL:")) {
-                        const valor = linha.split(':')[1].trim();
+                        let valor = linha.split(':')[1].trim();
+                        valor = limparValor(valor);
                         html += `<div style="color: #00ffaa;">  > TRIBUNAL: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.startsWith("ID ETAPA:")) {
-                        const valor = linha.split(':').slice(1).join(':').trim();
+                        let valor = linha.split(':').slice(1).join(':').trim();
+                        valor = limparValor(valor);
                         html += `<div style="color: #aaaaff;">  > ETAPA: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.startsWith("ORÇAMENTO:")) {
-                        const valor = linha.split(':')[1].trim();
+                        let valor = linha.split(':')[1].trim();
+                        valor = limparValor(valor);
                         html += `<div style="color: #ffaa00;">  > ORÇAMENTO: <span style="color: #ffffff; font-weight: bold;">${valor}</span></div>`;
                     } else if (linha.startsWith("DATA:")) {
                         let valor = linha.split(':').slice(1).join(':').trim();
-                        // Ajustar horário se estiver no formato de data/hora
-                        if (valor.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)) {
-                            valor = ajustarHorario(valor);
-                        }
+                        // NÃO ajustar horário do campo DATA - manter como está
+                        valor = limparValor(valor);
                         html += `<div style="color: #aaaaaa;">  > DATA: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.includes("SUCESSO")) {
                         html += `<div style="color: #00ff00; font-weight: bold; margin-top: 5px;">  >>> ${linha}</div>`;
