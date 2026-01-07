@@ -702,12 +702,13 @@
                 evento.linhas.forEach(linha => {
                     // Função auxiliar para limpar valor removendo "(campo: ..."
                     const limparValor = (valor) => {
-                        // Remove "(campo" e tudo depois, incluindo casos incompletos
-                        // Remove com ou sem parênteses fechados, com ou sem espaço antes
+                        // Remove tudo entre dois pontos e parênteses (ex: ": proprietario)", ": data)")
+                        // Remove também parênteses e seu conteúdo (ex: "(campo: ...)", "(campo")
                         return valor
-                            .replace(/\s*\(campo[^)]*\)/gi, '')  // Remove (campo: ...)
-                            .replace(/\s*\(campo.*$/gi, '')       // Remove (campo... no final
-                            .replace(/\s*\(campo/gi, '')         // Remove (campo sozinho
+                            .replace(/\s*:\s*[^)]*\)/gi, '')      // Remove ": qualquercoisa)"
+                            .replace(/\s*\([^)]*\)/gi, '')        // Remove "(qualquercoisa)"
+                            .replace(/\s*\([^)]*$/gi, '')         // Remove "(qualquercoisa" no final
+                            .replace(/\s*\(campo.*$/gi, '')       // Remove "(campo..." no final
                             .trim();
                     };
                     
