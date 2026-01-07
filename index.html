@@ -425,7 +425,7 @@
     </style>
 </head>
 <body>
-    <h3>SISTEMA DE MONITORAMENTO <span id="autoRefreshStatus" style="font-size: 14px; float: right; color: #00aa00;">↻ 10s</span></h3>
+    <h3>SISTEMA DE MONITORAMENTO <span id="autoRefreshStatus" style="font-size: 14px; float: right; color: #00aa00;">↻ 45s</span></h3>
 
     <div class="container">
         <!-- Card de Logs -->
@@ -1317,9 +1317,9 @@
         // Carregar logs ao carregar a página
         carregarLogs();
 
-        // Auto-refresh a cada 10 segundos
+        // Auto-refresh a cada 45 segundos
         let autoRefreshInterval;
-        let countdown = 10;
+        let countdown = 45;
 
         function iniciarAutoRefresh() {
             // Limpa intervalo anterior se existir
@@ -1333,12 +1333,12 @@
             // Configura novo intervalo
             autoRefreshInterval = setInterval(() => {
                 carregarLogs();
-            }, 10000); // 10 segundos
+            }, 45000); // 45 segundos
 
             // Atualiza contador visual
             setInterval(() => {
                 countdown--;
-                if (countdown <= 0) countdown = 10;
+                if (countdown <= 0) countdown = 45;
                 document.getElementById('autoRefreshStatus').textContent = `[↻ ${countdown}s]`;
             }, 1000);
         }
