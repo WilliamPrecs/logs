@@ -475,22 +475,38 @@
             ]);
         }
 
-        // Função para fazer requisição tentando serverless /api/logs (Vercel), depois local proxy e fallback direto
+        // Função para fazer requisição tentando serverless /api/logs (Vercel/Netlify), depois local proxy e fallback direto
         async function fazerRequisicao(url) {
             // 1. Serverless (Vercel) - mesmo domínio, sem CORS
             try {
-                console.log("Tentando /api/logs (serverless)...");
+                console.log("Tentando /api/logs (serverless Vercel)...");
                 const resp = await fetchWithTimeout(API_RELATIVE, {
                     method: 'GET',
                     headers: { 'Accept': 'application/json' }
                 }, 10000);
                 if (resp.ok) {
                     const data = await resp.json();
-                    console.log("✅ /api/logs funcionou!");
+                    console.log("✅ /api/logs (Vercel) funcionou!");
                     return data;
                 }
             } catch (err) {
-                console.log("Falha em /api/logs:", err.message);
+                console.log("Falha em /api/logs (Vercel):", err.message);
+            }
+            
+            // 1.5. Serverless (Netlify) - tentar função Netlify
+            try {
+                console.log("Tentando /.netlify/functions/logs (Netlify)...");
+                const netlifyResp = await fetchWithTimeout('/.netlify/functions/logs', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                }, 10000);
+                if (netlifyResp.ok) {
+                    const data = await netlifyResp.json();
+                    console.log("✅ /.netlify/functions/logs (Netlify) funcionou!");
+                    return data;
+                }
+            } catch (err) {
+                console.log("Falha em /.netlify/functions/logs (Netlify):", err.message);
             }
 
             // 2. Proxy local (útil para desenvolvimento)
