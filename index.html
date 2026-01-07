@@ -982,6 +982,7 @@
             
             const ultimoEvento = eventos[eventos.length - 1];
             let resumo = [];
+            let dataExtraida = null;
             
             // Função auxiliar para limpar valor
             const limparValor = (valor) => {
@@ -991,6 +992,12 @@
                     .replace(/\s*\([^)]*$/gi, '')
                     .replace(/\s*\(campo.*$/gi, '')
                     .trim();
+            };
+            
+            // Função para verificar se data tem horário completo
+            const temHorarioCompleto = (dataStr) => {
+                // Verifica se tem formato "YYYY-MM-DD HH:MM" ou "YYYY-MM-DD HH:MM:SS"
+                return /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(:\d{2})?$/.test(dataStr);
             };
             
             // Extrair apenas os campos solicitados
@@ -1006,6 +1013,32 @@
                 } else if (linha.startsWith("DATA:")) {
                     let valor = linha.split(':').slice(1).join(':').trim();
                     valor = limparValor(valor);
+                    dataExtraida = valor;
+                    
+                    // Se não tiver horário completo, tentar completar
+                    if (!temHorarioCompleto(valor)) {
+                        // Verifica se tem formato "YYYY-MM-DD HH" (sem minutos)
+                        const matchDataHora = valor.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2})$/);
+                        if (matchDataHora) {
+                            // Completa com ":00" para mostrar minutos
+                            valor = `${matchDataHora[1]} ${matchDataHora[2]}:00`;
+                        } else if (ultimoEvento.data) {
+                            // Se ainda não tiver horário, usar a data do evento (já ajustada)
+                            const dataEvento = ultimoEvento.data;
+                            if (dataEvento.includes(' ')) {
+                                const [dataPart, horaPart] = dataEvento.split(' ');
+                                if (horaPart) {
+                                    // Garantir formato HH:MM:SS ou HH:MM
+                                    const partesHora = horaPart.split(':');
+                                    if (partesHora.length === 2) {
+                                        valor = `${dataPart} ${horaPart}:00`;
+                                    } else {
+                                        valor = `${dataPart} ${horaPart}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
                     resumo.push(`> DATA: ${valor}`);
                 } else if (linha.startsWith("ID ETAPA:")) {
                     let valor = linha.split(':').slice(1).join(':').trim();
