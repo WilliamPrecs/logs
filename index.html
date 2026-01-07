@@ -153,46 +153,27 @@
 
         #logs {
             background: #000000;
-            padding: 0;
+            padding: 15px;
             font-family: 'Consolas', 'Courier New', monospace;
             font-size: 15px;
             line-height: 1.5;
             flex: 1;
-            overflow: hidden;
+            overflow-y: auto;
             overflow-x: hidden;
             color: #00ff00;
             margin: 0;
-            position: relative;
-            height: 100%;
-        }
-
-        /* Container para o conteúdo com scroll automático */
-        .logs-content {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 15px;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+            scroll-behavior: smooth;
             white-space: pre-wrap;
             word-wrap: break-word;
-            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
-            animation: scroll-down-continuous 60s linear infinite;
-            will-change: transform;
+            /* Esconder barra padrão */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
         }
 
-        /* Pausar animação no hover */
-        #logs:hover .logs-content {
-            animation-play-state: paused;
-        }
-
-        /* Animação de scroll automático vertical - rola apenas para baixo continuamente */
-        @keyframes scroll-down-continuous {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(-50%); /* Move metade (conteúdo duplicado) para criar loop suave */
-            }
+        /* Esconder barra padrão no Webkit */
+        #logs::-webkit-scrollbar {
+            display: none;
         }
 
         /* Barra de rolagem customizada - escondida pois usamos CSS animations */
@@ -452,14 +433,7 @@
                 <span>[1] METAS DIÁRIAS</span>
             </div>
             <div class="card-content">
-                <div id="logs">
-                    <div class="logs-content loading">Inicializando sistema... Aguarde...</div>
-                </div>
-                <div class="custom-scrollbar" id="scrollbar-logs">
-                    <div class="custom-scrollbar-track">
-                        <div class="custom-scrollbar-thumb" id="scrollbar-thumb-logs"></div>
-                    </div>
-                </div>
+                <pre id="logs" class="loading">Inicializando sistema... Aguarde...</pre>
             </div>
         </div>
 
@@ -489,7 +463,6 @@
         const API_FALLBACK = "https://auwb72k75qnn3ncgrchc6qpyv40kvdaa.lambda-url.sa-east-1.on.aws/"; // fallback direto
         const LOCAL_PROXY = "http://localhost:9000/api/logs"; // proxy local opcional
         const logsElement = document.getElementById("logs");
-        const logsContentElement = logsElement ? logsElement.querySelector('.logs-content') : null;
 
         // Função para fazer requisição com timeout
         function fetchWithTimeout(url, options = {}, timeout = 10000) {
@@ -928,6 +901,105 @@
             return resultado.length > 0 ? resultado.join("\n") : "Sem logs relevantes para exibir";
         }
 
+        // Função para processar logs de webhooks e gerar resumo para Metas Diárias
+        function processarLogsMetasDiarias(data) {
+            if (!data || !Array.isArray(data)) return '';
+            
+            let eventos = [];
+            let eventoAtual = null;
+            
+            // Processar logs para extrair eventos de webhook
+            for (let i = 0; i < data.length; i++) {
+                const log = data[i];
+                const msg = log.mensagem.trim();
+                
+                if (msg === "==================================================") {
+                    if (eventoAtual) {
+                        eventos.push(eventoAtual);
+                    }
+                    eventoAtual = { data: ajustarHorario(log.data), linhas: [] };
+                    continue;
+                }
+                
+                if (eventoAtual && msg !== "WEBHOOK RECEBIDO!" && 
+                    !msg.includes("EVENTO COMPLETO") && 
+                    !msg.includes("TIPO DO BODY") &&
+                    !msg.includes("DADOS PARSEADOS") &&
+                    !msg.includes("DADOS PARA PROCESSAMENTO") &&
+                    !msg.includes("VALORES EXTRAÍDOS FINAIS") &&
+                    !msg.includes(">>> FORMATO SIMPLES") &&
+                    !msg.includes(">>> ID_NEGOCIO ENCONTRADO") &&
+                    !msg.includes("DATA CONVERTIDA") &&
+                    !msg.includes("ORÇAMENTO CONVERTIDO") &&
+                    !msg.startsWith('"') &&
+                    !msg.startsWith('{') &&
+                    !msg.startsWith('}')) {
+                    eventoAtual.linhas.push(msg);
+                }
+            }
+            
+            if (eventoAtual) {
+                eventos.push(eventoAtual);
+            }
+            
+            // Pegar apenas o último evento
+            if (eventos.length === 0) {
+                return '> Nenhum evento de negócio registrado';
+            }
+            
+            const ultimoEvento = eventos[eventos.length - 1];
+            let resumo = [];
+            
+            // Função auxiliar para limpar valor
+            const limparValor = (valor) => {
+                return valor
+                    .replace(/\s*:\s*[^)]*\)/gi, '')
+                    .replace(/\s*\([^)]*\)/gi, '')
+                    .replace(/\s*\([^)]*$/gi, '')
+                    .replace(/\s*\(campo.*$/gi, '')
+                    .trim();
+            };
+            
+            // Extrair apenas os campos solicitados
+            ultimoEvento.linhas.forEach(linha => {
+                if (linha.startsWith("ID NEGÓCIO:")) {
+                    let valor = linha.split(':')[1].trim();
+                    valor = limparValor(valor);
+                    resumo.push(`> ID NEGÓCIO: ${valor}`);
+                } else if (linha.startsWith("PROPRIETÁRIO:")) {
+                    let valor = linha.split(':').slice(1).join(':').trim();
+                    valor = limparValor(valor);
+                    resumo.push(`> PROPRIETÁRIO: ${valor}`);
+                } else if (linha.startsWith("DATA:")) {
+                    let valor = linha.split(':').slice(1).join(':').trim();
+                    valor = limparValor(valor);
+                    resumo.push(`> DATA: ${valor}`);
+                } else if (linha.startsWith("ID ETAPA:")) {
+                    let valor = linha.split(':').slice(1).join(':').trim();
+                    valor = limparValor(valor);
+                    resumo.push(`> ETAPA: ${valor}`);
+                } else if (linha.startsWith("ORÇAMENTO:")) {
+                    let valor = linha.split(':')[1].trim();
+                    valor = limparValor(valor);
+                    resumo.push(`> ORÇAMENTO: ${valor}`);
+                } else if (linha.startsWith("ORGANIZAÇÃO:")) {
+                    let valor = linha.split(':').slice(1).join(':').trim();
+                    valor = limparValor(valor);
+                    resumo.push(`> ORGANIZAÇÃO: ${valor}`);
+                } else if (linha.startsWith("TRIBUNAL:")) {
+                    let valor = linha.split(':')[1].trim();
+                    valor = limparValor(valor);
+                    resumo.push(`> TRIBUNAL: ${valor}`);
+                }
+            });
+            
+            if (resumo.length === 0) {
+                return '> Nenhum dado de negócio encontrado';
+            }
+            
+            return resumo.join('\n');
+        }
+
         // Função para processar logs de movimentacoesWilliam e gerar resumo
         function processarLogsMovimentacoes(data) {
             if (!data || !Array.isArray(data)) return '';
@@ -1022,52 +1094,35 @@
         }
 
         async function carregarLogs() {
-            const contentEl = document.querySelector('.logs-content');
-            if (!contentEl) return;
+            const logsEl = document.getElementById('logs');
+            const terminalEl = document.getElementById('terminal');
             
-            contentEl.classList.remove("error", "empty");
-            contentEl.classList.add("loading");
-            contentEl.innerHTML = ">>> Carregando dados do sistema...<br>>> Conectando ao servidor...<br>>> Aguarde...";
+            if (logsEl) {
+                logsEl.textContent = ">>> Carregando dados do sistema...\n>>> Conectando ao servidor...\n>>> Aguarde...";
+            }
 
             try {
                 const data = await fazerRequisicao(API_FALLBACK);
                 
-                contentEl.classList.remove("loading");
-                
                 if (data && Array.isArray(data) && data.length > 0) {
-                    const htmlContent = formatarLogsHTML(data);
-                    // Duplicar conteúdo para scroll contínuo (rola para baixo, quando termina volta ao topo)
-                    contentEl.innerHTML = htmlContent + htmlContent;
-                    
-                    // Processar logs de movimentacoesWilliam e atualizar terminal
-                    const terminalEl = document.getElementById('terminal');
-                    if (terminalEl) {
-                        const resumoMovimentacoes = processarLogsMovimentacoes(data);
-                        terminalEl.textContent = resumoMovimentacoes || '> TERMINAL PRONTO\n> Aguardando comandos...\n> Sistema operacional...\n> \n> _';
+                    // Processar logs de webhooks e atualizar terminal "Metas Diárias"
+                    if (logsEl) {
+                        const resumoMetas = processarLogsMetasDiarias(data);
+                        logsEl.textContent = resumoMetas || '> Nenhum evento de negócio registrado';
                     }
                     
-                    // Reiniciar animação: remover e readicionar para forçar restart
-                    contentEl.style.animation = 'none';
-                    void contentEl.offsetHeight; // Trigger reflow
-                    
-                    // Ajustar animação baseada na altura do conteúdo
-                    setTimeout(() => {
-                        const contentHeight = contentEl.scrollHeight;
-                        const containerHeight = document.getElementById('logs').clientHeight;
-                        const scrollDistance = contentHeight / 2; // Metade porque duplicamos
-                        
-                        if (scrollDistance > containerHeight) {
-                            // Calcular duração: rola 2px por segundo
-                            const duration = Math.max(30, scrollDistance / 2);
-                            contentEl.style.animation = `scroll-down-continuous ${duration}s linear infinite`;
-                        } else {
-                            // Se não há scroll suficiente, ainda aplica animação
-                            contentEl.style.animation = 'scroll-down-continuous 60s linear infinite';
-                        }
-                    }, 100);
+                    // Processar logs de movimentacoesWilliam e atualizar terminal "Saldo em Conta"
+                    if (terminalEl) {
+                        const resumoMovimentacoes = processarLogsMovimentacoes(data);
+                        terminalEl.textContent = resumoMovimentacoes || '> Nenhuma operação de movimentações registrada';
+                    }
                 } else {
-                    contentEl.classList.add("empty");
-                    contentEl.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado 10 minutos atrás.</span><br><span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span><br><span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
+                    if (logsEl) {
+                        logsEl.textContent = '> Nenhum evento registrado 10 minutos atrás.\n> STATUS: Aguardando novos eventos...\n> Pressione [F5] para atualizar.';
+                    }
+                    if (terminalEl) {
+                        terminalEl.textContent = '> Nenhuma operação de movimentações registrada';
+                    }
                 }
             } catch (err) {
                 logsElement.classList.remove("loading");
