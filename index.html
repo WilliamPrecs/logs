@@ -169,14 +169,14 @@
         /* Container para o conteúdo com scroll automático */
         .logs-content {
             position: absolute;
-            top: 100%;
+            top: 0;
             left: 0;
             right: 0;
             padding: 15px;
             white-space: pre-wrap;
             word-wrap: break-word;
             text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
-            animation: scroll-down 40s linear infinite;
+            animation: scroll-down-continuous 60s linear infinite;
             will-change: transform;
         }
 
@@ -185,13 +185,13 @@
             animation-play-state: paused;
         }
 
-        /* Animação de scroll automático vertical - começa de baixo e sobe */
-        @keyframes scroll-down {
+        /* Animação de scroll automático vertical - rola apenas para baixo continuamente */
+        @keyframes scroll-down-continuous {
             0% {
                 transform: translateY(0);
             }
             100% {
-                transform: translateY(-50%); /* Move metade do conteúdo (já que duplicamos para loop infinito) */
+                transform: translateY(-50%); /* Move metade (conteúdo duplicado) para criar loop suave */
             }
         }
 
@@ -936,8 +936,20 @@
                 
                 if (data && Array.isArray(data) && data.length > 0) {
                     const htmlContent = formatarLogsHTML(data);
-                    // Duplicar conteúdo para criar loop infinito na animação
+                    // Duplicar conteúdo para scroll contínuo (rola para baixo, quando termina volta ao topo)
                     contentEl.innerHTML = htmlContent + htmlContent;
+                    // Ajustar animação baseada na altura do conteúdo
+                    setTimeout(() => {
+                        const contentHeight = contentEl.scrollHeight;
+                        const containerHeight = document.getElementById('logs').clientHeight;
+                        const scrollDistance = contentHeight / 2; // Metade porque duplicamos
+                        
+                        if (scrollDistance > containerHeight) {
+                            // Calcular duração: rola 2px por segundo
+                            const duration = Math.max(30, scrollDistance / 2);
+                            contentEl.style.animationDuration = duration + 's';
+                        }
+                    }, 100);
                 } else {
                     contentEl.classList.add("empty");
                     contentEl.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado 10 minutos atrás.</span><br><span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span><br><span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
