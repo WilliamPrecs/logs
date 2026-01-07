@@ -485,7 +485,7 @@
         <!-- Card Terminal 2 -->
         <div id="card-terminal2" class="card">
             <div class="card-header">
-                <span>[3] TERMINAL 3</span>
+                <span>[3] DISCADOR</span>
             </div>
             <div class="card-content">
                 <pre id="terminal2" class="terminal-output">> TERMINAL PRONTO
@@ -1182,73 +1182,83 @@
             return resumo.join('\n');
         }
 
-        // Função genérica para processar novos logs (detecta automaticamente origens não processadas)
-        function processarLogsNovos(data) {
+        // Função para processar logs de filtrar_discador_e_salvar_no_banco
+        function processarLogsDiscador(data) {
             if (!data || !Array.isArray(data)) return '';
             
-            // Coletar todas as origens únicas dos logs
-            const origens = new Set();
-            data.forEach(log => {
-                if (log.origem) {
-                    origens.add(log.origem);
-                }
-            });
+            // Filtrar apenas logs de filtrar_discador_e_salvar_no_banco
+            const logsDiscador = data.filter(log => log.origem === 'filtrar_discador_e_salvar_no_banco');
             
-            // Remover origens já processadas
-            origens.delete('movimentacoesWilliam');
-            // Webhooks não têm origem, então não precisamos remover
+            if (logsDiscador.length === 0) {
+                return '> Nenhuma operação de discador registrada';
+            }
             
-            // Se não houver novas origens, verificar logs sem origem que não são webhooks
-            if (origens.size === 0) {
-                // Verificar se há logs sem origem que não são webhooks
-                const logsSemOrigem = data.filter(log => !log.origem && !log.mensagem.includes('WEBHOOK'));
-                if (logsSemOrigem.length === 0) {
-                    return '> Nenhum novo log detectado';
+            // Processar logs em ordem cronológica para encontrar o último evento completo
+            let ultimoTribunal = null;
+            let ultimaData = null;
+            let ultimoOrcamento = null;
+            let statusOperacao = null;
+            let totalInseridos = 0;
+            
+            // Processar do mais recente para o mais antigo para pegar o último evento completo
+            for (let i = logsDiscador.length - 1; i >= 0; i--) {
+                const log = logsDiscador[i];
+                const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
+                
+                // Procurar pelo último evento completo (que termina com "DADOS INSERIDOS NO BANCO COM SUCESSO")
+                if (msg.includes('DADOS INSERIDOS NO BANCO COM SUCESSO')) {
+                    totalInseridos++;
+                    statusOperacao = 'Sucesso';
+                    // Quando encontrar sucesso, pegar os dados anteriores desse evento
+                    // Continuar processando para trás para pegar os dados desse evento
+                    for (let j = i; j >= Math.max(0, i - 10); j--) {
+                        const logAnterior = logsDiscador[j];
+                        const msgAnterior = logAnterior.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
+                        
+                        if (msgAnterior.includes('tribunal:')) {
+                            ultimoTribunal = msgAnterior.split(':')[1]?.trim() || null;
+                        } else if (msgAnterior.includes('DATA CONVERTIDA:')) {
+                            ultimaData = msgAnterior.split(':').slice(1).join(':').trim() || null;
+                        } else if (msgAnterior.includes('ORÇAMENTO CONVERTIDO:')) {
+                            ultimoOrcamento = msgAnterior.split(':')[1]?.trim() || null;
+                        }
+                    }
+                    break; // Pegou o último evento completo, pode parar
                 }
             }
             
+            // Construir resumo
             let resumo = [];
             resumo.push('> ========================================');
-            resumo.push('> NOVOS LOGS DETECTADOS');
+            resumo.push('> RESUMO DE DISCADOR');
             resumo.push('> ========================================');
             
-            // Processar cada origem encontrada
-            origens.forEach(origem => {
-                const logsOrigem = data.filter(log => log.origem === origem);
-                if (logsOrigem.length > 0) {
-                    resumo.push(`> ORIGEM: ${origem}`);
-                    resumo.push(`> TOTAL DE LOGS: ${logsOrigem.length}`);
-                    
-                    // Pegar os últimos 5 logs dessa origem
-                    const ultimosLogs = logsOrigem.slice(-5);
-                    resumo.push('> ÚLTIMOS LOGS:');
-                    ultimosLogs.forEach(log => {
-                        const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
-                        const hora = ajustarHorario(log.data);
-                        resumo.push(`>   [${hora}] ${msg.substring(0, 60)}${msg.length > 60 ? '...' : ''}`);
-                    });
-                    resumo.push('');
-                }
-            });
-            
-            // Se não houver origens mas houver logs sem origem não-webhook
-            if (origens.size === 0) {
-                const logsSemOrigem = data.filter(log => !log.origem && !log.mensagem.includes('WEBHOOK'));
-                if (logsSemOrigem.length > 0) {
-                    resumo.push('> LOGS SEM ORIGEM ESPECÍFICA:');
-                    resumo.push(`> TOTAL: ${logsSemOrigem.length}`);
-                    const ultimosLogs = logsSemOrigem.slice(-5);
-                    ultimosLogs.forEach(log => {
-                        const msg = log.mensagem.substring(0, 60);
-                        const hora = ajustarHorario(log.data);
-                        resumo.push(`>   [${hora}] ${msg}${log.mensagem.length > 60 ? '...' : ''}`);
-                    });
-                }
+            if (statusOperacao) {
+                resumo.push(`> STATUS: ${statusOperacao}`);
             }
             
-            resumo.push('> ========================================');
-            resumo.push('> NOTA: Esta função detecta automaticamente');
-            resumo.push('> novos logs. Ajuste conforme necessário.');
+            if (totalInseridos > 0) {
+                resumo.push(`> REGISTROS INSERIDOS: ${totalInseridos}`);
+            }
+            
+            if (ultimoTribunal) {
+                resumo.push(`> ÚLTIMO TRIBUNAL: ${ultimoTribunal}`);
+            }
+            
+            if (ultimaData) {
+                resumo.push(`> ÚLTIMA DATA: ${ultimaData}`);
+            }
+            
+            if (ultimoOrcamento) {
+                resumo.push(`> ÚLTIMO ORÇAMENTO: ${ultimoOrcamento}`);
+            }
+            
+            if (logsDiscador.length > 0) {
+                const ultimoLog = logsDiscador[logsDiscador.length - 1];
+                const horaAjustada = ajustarHorario(ultimoLog.data);
+                resumo.push(`> ÚLTIMA ATUALIZAÇÃO: ${horaAjustada}`);
+            }
+            
             resumo.push('> ========================================');
             
             return resumo.join('\n');
@@ -1316,10 +1326,10 @@
                         }
                     }
                     
-                    // Processar novos logs e atualizar terminal 2
+                    // Processar logs de filtrar_discador_e_salvar_no_banco e atualizar terminal 3
                     if (terminal2El) {
-                        const resumoNovos = processarLogsNovos(data);
-                        const novoConteudoTerminal2 = resumoNovos || '> Nenhum novo log detectado';
+                        const resumoDiscador = processarLogsDiscador(data);
+                        const novoConteudoTerminal2 = resumoDiscador || '> Nenhuma operação de discador registrada';
                         const novoConteudoTerminal2Normalizado = normalizarConteudo(novoConteudoTerminal2);
                         const conteudoAtualTerminal2Normalizado = normalizarConteudo(terminal2El.textContent);
                         
@@ -1363,7 +1373,7 @@
                         }
                     }
                     if (terminal2El) {
-                        const msgVazioTerminal2 = '> Nenhum novo log detectado';
+                        const msgVazioTerminal2 = '> Nenhuma operação de discador registrada';
                         const msgVazioTerminal2Normalizado = normalizarConteudo(msgVazioTerminal2);
                         const conteudoAtualTerminal2Normalizado = normalizarConteudo(terminal2El.textContent);
                         
@@ -1431,7 +1441,7 @@
                 }
                 
                 if (terminal2El) {
-                    const msgErroTerminal2 = "> ERRO: Falha ao carregar novos logs.";
+                    const msgErroTerminal2 = "> ERRO: Falha ao carregar dados de discador.";
                     const msgErroTerminal2Normalizada = normalizarConteudo(msgErroTerminal2);
                     const conteudoAtualTerminal2Normalizado = normalizarConteudo(terminal2El.textContent);
                     
