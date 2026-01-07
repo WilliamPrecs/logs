@@ -702,7 +702,13 @@
                 evento.linhas.forEach(linha => {
                     // Função auxiliar para limpar valor removendo "(campo: ..."
                     const limparValor = (valor) => {
-                        return valor.replace(/\s*\(campo:.*?\)/gi, '').trim();
+                        // Remove "(campo" e tudo depois, incluindo casos incompletos
+                        // Remove com ou sem parênteses fechados, com ou sem espaço antes
+                        return valor
+                            .replace(/\s*\(campo[^)]*\)/gi, '')  // Remove (campo: ...)
+                            .replace(/\s*\(campo.*$/gi, '')       // Remove (campo... no final
+                            .replace(/\s*\(campo/gi, '')         // Remove (campo sozinho
+                            .trim();
                     };
                     
                     if (linha.startsWith("ID NEGÓCIO:")) {
@@ -938,6 +944,11 @@
                     const htmlContent = formatarLogsHTML(data);
                     // Duplicar conteúdo para scroll contínuo (rola para baixo, quando termina volta ao topo)
                     contentEl.innerHTML = htmlContent + htmlContent;
+                    
+                    // Reiniciar animação: remover e readicionar para forçar restart
+                    contentEl.style.animation = 'none';
+                    void contentEl.offsetHeight; // Trigger reflow
+                    
                     // Ajustar animação baseada na altura do conteúdo
                     setTimeout(() => {
                         const contentHeight = contentEl.scrollHeight;
@@ -947,7 +958,10 @@
                         if (scrollDistance > containerHeight) {
                             // Calcular duração: rola 2px por segundo
                             const duration = Math.max(30, scrollDistance / 2);
-                            contentEl.style.animationDuration = duration + 's';
+                            contentEl.style.animation = `scroll-down-continuous ${duration}s linear infinite`;
+                        } else {
+                            // Se não há scroll suficiente, ainda aplica animação
+                            contentEl.style.animation = 'scroll-down-continuous 60s linear infinite';
                         }
                     }, 100);
                 } else {
