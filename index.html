@@ -75,6 +75,28 @@
             font-size: 14px;
             font-weight: bold;
             letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-fullscreen {
+            background: #000000;
+            color: #00ff00;
+            border: 1px solid #000000;
+            padding: 3px 10px;
+            font-size: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .btn-fullscreen:hover {
+            background: #003300;
+            color: #00ff00;
+            border-color: #00ff00;
         }
 
         #logs {
@@ -194,12 +216,18 @@
         </div>
 
         <div class="secao-dashboard">
-            <div class="secao-header">[2] DASHBOARD MENSAL</div>
+            <div class="secao-header">
+                <span>[2] DASHBOARD MENSAL</span>
+                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/mensalPowerBI/')">[⛶ TELA CHEIA]</button>
+            </div>
             <iframe src="https://williamprecs.github.io/mensalPowerBI/" frameborder="0" class="dashboard-iframe"></iframe>
         </div>
 
         <div class="secao-dashboard">
-            <div class="secao-header">[3] DASHBOARD COMERCIAL</div>
+            <div class="secao-header">
+                <span>[3] DASHBOARD COMERCIAL</span>
+                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/comercialPrecsPowerBI/')">[⛶ TELA CHEIA]</button>
+            </div>
             <iframe src="https://williamprecs.github.io/comercialPrecsPowerBI/" frameborder="0" class="dashboard-iframe"></iframe>
         </div>
     </div>
@@ -580,6 +608,11 @@
                 carregarLogs();
             }
         });
+
+        // Função para abrir dashboard em tela cheia em nova aba
+        function abrirFullscreen(url) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
     </script>
 </body>
 </html>
