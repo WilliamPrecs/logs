@@ -919,19 +919,12 @@
                 
                 if (data && Array.isArray(data) && data.length > 0) {
                     logsElement.innerHTML = formatarLogsHTML(data);
-                    // Rolagem suave e contínua para o final - múltiplas tentativas para garantir
+                    // Atualizar scrollbar e reiniciar rolagem automática
                     setTimeout(() => {
-                        logsElement.scrollTop = logsElement.scrollHeight;
-                    }, 50);
-                    setTimeout(() => {
-                        logsElement.scrollTo({
-                            top: logsElement.scrollHeight,
-                            behavior: 'smooth'
-                        });
-                    }, 200);
-                    setTimeout(() => {
-                        logsElement.scrollTop = logsElement.scrollHeight;
-                    }, 500);
+                        atualizarScrollbarCustomizada();
+                        // Reiniciar rolagem automática após carregar novos logs
+                        iniciarRolagemAutomatica();
+                    }, 300);
                 } else {
                     logsElement.classList.add("empty");
                     logsElement.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado 10 minutos atrás.</span>\n<span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span>\n<span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
@@ -1195,39 +1188,59 @@
                 clearInterval(autoScrollInterval);
             }
             
+            let lastScrollTop = 0;
+            let userScrollDetected = false;
+            
             // Detectar quando usuário está rolando manualmente
             logsEl.addEventListener('scroll', function() {
-                isUserScrolling = true;
+                const currentScrollTop = logsEl.scrollTop;
+                
+                // Se a diferença for grande, é rolagem manual
+                if (Math.abs(currentScrollTop - lastScrollTop) > 5) {
+                    userScrollDetected = true;
+                    isUserScrolling = true;
+                }
+                
+                lastScrollTop = currentScrollTop;
                 atualizarScrollbarCustomizada();
                 
                 clearTimeout(scrollTimeout);
                 scrollTimeout = setTimeout(() => {
                     isUserScrolling = false;
-                }, 2000); // Após 2s sem rolar, volta ao auto-scroll
+                    userScrollDetected = false;
+                }, 3000); // Após 3s sem rolar, volta ao auto-scroll
             });
             
             // Rolagem automática contínua tipo esteira
+            let scrollPosition = 0;
             autoScrollInterval = setInterval(() => {
-                if (!isUserScrolling && logsEl) {
-                    const maxScroll = logsEl.scrollHeight - logsEl.clientHeight;
-                    if (maxScroll > 0) {
-                        // Se já está no final, volta para o topo suavemente
-                        if (logsEl.scrollTop >= maxScroll - 10) {
-                            logsEl.scrollTo({
-                                top: 0,
-                                behavior: 'smooth'
-                            });
-                        } else {
-                            // Continua rolando para baixo
-                            logsEl.scrollBy({
-                                top: 2,
-                                behavior: 'smooth'
-                            });
-                        }
-                    }
+                if (!logsEl) return;
+                
+                const maxScroll = logsEl.scrollHeight - logsEl.clientHeight;
+                
+                if (maxScroll <= 0) {
                     atualizarScrollbarCustomizada();
+                    return;
                 }
-            }, 50); // Atualiza a cada 50ms para movimento suave
+                
+                if (!isUserScrolling && !userScrollDetected) {
+                    // Incrementar posição de rolagem
+                    scrollPosition += 1.5; // Velocidade de rolagem
+                    
+                    // Se chegou ao final, volta ao topo
+                    if (scrollPosition >= maxScroll) {
+                        scrollPosition = 0;
+                        logsEl.scrollTop = 0;
+                    } else {
+                        logsEl.scrollTop = scrollPosition;
+                    }
+                    
+                    atualizarScrollbarCustomizada();
+                } else {
+                    // Sincronizar posição quando usuário rola manualmente
+                    scrollPosition = logsEl.scrollTop;
+                }
+            }, 30); // Atualiza a cada 30ms para movimento mais suave
         }
 
         // Inicializar quando a página carregar
@@ -1241,11 +1254,30 @@
                 if (logsEl) {
                     const observer = new MutationObserver(() => {
                         atualizarScrollbarCustomizada();
+                        // Reiniciar rolagem se necessário
+                        if (!autoScrollInterval) {
+                            iniciarRolagemAutomatica();
+                        }
                     });
                     observer.observe(logsEl, { childList: true, subtree: true });
                 }
-            }, 500);
+            }, 1000);
         });
+        
+        // Também inicializar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(() => {
+                    atualizarScrollbarCustomizada();
+                    iniciarRolagemAutomatica();
+                }, 1000);
+            });
+        } else {
+            setTimeout(() => {
+                atualizarScrollbarCustomizada();
+                iniciarRolagemAutomatica();
+            }, 1000);
+        }
     </script>
 </body>
 </html>
