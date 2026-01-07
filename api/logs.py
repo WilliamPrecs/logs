@@ -1,3 +1,4 @@
+from http.server import BaseHTTPRequestHandler
 import json
 import os
 import urllib.request
@@ -8,24 +9,24 @@ LAMBDA_URL = os.environ.get(
 )
 
 
-def handler(request):
+class handler(BaseHTTPRequestHandler):
     """Vercel serverless function that proxies the Lambda and adds CORS."""
-    try:
-        req = urllib.request.Request(LAMBDA_URL, headers={"Accept": "application/json"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            body = resp.read().decode("utf-8")
-            status = resp.status
-    except Exception as exc:  # pragma: no cover - external call
-        status = 500
-        body = json.dumps({"error": str(exc)})
+    
+    def do_GET(self):
+        try:
+            req = urllib.request.Request(LAMBDA_URL, headers={"Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                body = resp.read()
+                status = 200
+        except Exception as exc:
+            status = 500
+            body = json.dumps({"error": str(exc)}).encode('utf-8')
 
-    return {
-        "statusCode": status,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type",
-        },
-        "body": body,
-    }
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+        self.wfile.write(body)
+        return
 
