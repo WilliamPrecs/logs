@@ -35,82 +35,92 @@
 
         h3 {
             color: #00ff00;
-            font-size: 20px;
-            font-weight: normal;
-            padding: 10px 15px;
-            border: 2px solid #00ff00;
-            background: #001100;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 15px 20px;
+            border: 3px solid #00ff00;
+            background: linear-gradient(90deg, #001100 0%, #002200 100%);
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             margin: 0;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
         }
 
         h3::before {
             content: '> ';
-            color: #00aa00;
+            color: #00ff00;
+            text-shadow: 0 0 15px rgba(0, 255, 0, 1);
         }
 
         .secao-logs {
             grid-column: 1 / -1;
             display: flex;
             flex-direction: column;
-            max-height: 20vh;
-            border: 1px solid #00ff00;
+            max-height: 22vh;
+            border: 2px solid #00ff00;
             background: #000000;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3), inset 0 0 30px rgba(0, 255, 0, 0.05);
         }
 
         .secao-dashboard {
             display: flex;
             flex-direction: column;
-            border: 1px solid #00ff00;
+            border: 2px solid #00ff00;
             background: #000000;
             min-height: 0;
             overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
         }
 
         .secao-header {
             background: #00ff00;
             color: #000000;
-            padding: 5px 15px;
-            font-size: 14px;
+            padding: 8px 15px;
+            font-size: 16px;
             font-weight: bold;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 255, 0, 0.5);
         }
 
         .btn-fullscreen {
             background: #000000;
             color: #00ff00;
-            border: 1px solid #000000;
-            padding: 3px 10px;
-            font-size: 12px;
+            border: 2px solid #000000;
+            padding: 5px 12px;
+            font-size: 13px;
             font-family: 'Consolas', 'Courier New', monospace;
             font-weight: bold;
             cursor: pointer;
             letter-spacing: 1px;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         .btn-fullscreen:hover {
             background: #003300;
             color: #00ff00;
-            border-color: #00ff00;
+            border-color: #003300;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+            transform: scale(1.05);
         }
 
         #logs {
             background: #000000;
-            padding: 10px;
+            padding: 15px;
             font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.4;
+            font-size: 15px;
+            line-height: 1.5;
             white-space: pre-wrap;
             word-wrap: break-word;
             flex: 1;
             overflow-y: auto;
             color: #00ff00;
             margin: 0;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
         }
 
         #logs::-webkit-scrollbar {
@@ -218,7 +228,7 @@
 
         <div class="secao-dashboard">
             <div class="secao-header">
-                <span>[2] DASHBOARD MENSAL</span>
+                <span>[2] DASHBOARD METAS DIÁRIAS</span>
                 <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/mensalPowerBI/')">[⛶ TELA CHEIA]</button>
             </div>
             <iframe src="https://williamprecs.github.io/mensalPowerBI/" frameborder="0" class="dashboard-iframe"></iframe>
@@ -226,7 +236,7 @@
 
         <div class="secao-dashboard">
             <div class="secao-header">
-                <span>[3] DASHBOARD COMERCIAL</span>
+                <span>[3] DASHBOARD METAS MENSAIS</span>
                 <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/comercialPrecsPowerBI/')">[⛶ TELA CHEIA]</button>
             </div>
             <iframe src="https://williamprecs.github.io/comercialPrecsPowerBI/" frameborder="0" class="dashboard-iframe"></iframe>
@@ -348,6 +358,90 @@
 
             // Se tudo falhou
             throw new Error("Não foi possível carregar os logs. Execute 'python proxy_server.py' para usar o servidor proxy local.");
+        }
+
+        function formatarLogsHTML(data) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                return '<span style="color: #ffaa00;">>>> Nenhum evento encontrado</span>';
+            }
+
+            let html = '<div style="color: #00ff00;">' + "=".repeat(80) + '</div>\n';
+            let eventos = [];
+            let eventoAtual = null;
+
+            for (let i = 0; i < data.length; i++) {
+                const log = data[i];
+                const msg = log.mensagem.trim();
+
+                if (msg === "==================================================") {
+                    if (eventoAtual) {
+                        eventos.push(eventoAtual);
+                    }
+                    eventoAtual = { data: log.data, linhas: [] };
+                    continue;
+                }
+
+                if (eventoAtual && msg !== "WEBHOOK RECEBIDO!" && 
+                    !msg.includes("EVENTO COMPLETO") && 
+                    !msg.includes("TIPO DO BODY") &&
+                    !msg.includes("DADOS PARSEADOS") &&
+                    !msg.includes("DADOS PARA PROCESSAMENTO") &&
+                    !msg.includes("VALORES EXTRAÍDOS FINAIS") &&
+                    !msg.includes(">>> FORMATO SIMPLES") &&
+                    !msg.includes(">>> ID_NEGOCIO ENCONTRADO") &&
+                    !msg.includes("DATA CONVERTIDA") &&
+                    !msg.includes("ORÇAMENTO CONVERTIDO") &&
+                    !msg.startsWith('"') &&
+                    !msg.startsWith('{') &&
+                    !msg.startsWith('}')) {
+                    eventoAtual.linhas.push(msg);
+                }
+            }
+
+            if (eventoAtual) {
+                eventos.push(eventoAtual);
+            }
+
+            // Mostrar apenas os 3 últimos eventos
+            const eventosRecentes = eventos.slice(-3);
+
+            eventosRecentes.forEach((evento, idx) => {
+                html += `\n<div style="margin-bottom: 15px;">`;
+                html += `<div style="color: #00ffff; font-weight: bold; font-size: 16px;">📥 WEBHOOK #${eventos.length - eventosRecentes.length + idx + 1} - ${evento.data}</div>`;
+                html += `<div style="color: #00aa00; margin: 5px 0;">${"─".repeat(70)}</div>`;
+
+                evento.linhas.forEach(linha => {
+                    if (linha.startsWith("ID NEGÓCIO:")) {
+                        const valor = linha.split(':')[1].trim();
+                        html += `<div style="color: #ffff00; font-weight: bold;">  🔹 ID NEGÓCIO: <span style="color: #ffffff; font-size: 17px;">${valor}</span></div>`;
+                    } else if (linha.startsWith("PROPRIETÁRIO:")) {
+                        const valor = linha.split(':').slice(1).join(':').trim();
+                        html += `<div style="color: #00ffaa;">  👤 PROPRIETÁRIO: <span style="color: #ffffff;">${valor}</span></div>`;
+                    } else if (linha.startsWith("ORGANIZAÇÃO:")) {
+                        const valor = linha.split(':').slice(1).join(':').trim();
+                        html += `<div style="color: #00ffaa;">  🏢 ORGANIZAÇÃO: <span style="color: #ffffff;">${valor}</span></div>`;
+                    } else if (linha.startsWith("TRIBUNAL:")) {
+                        const valor = linha.split(':')[1].trim();
+                        html += `<div style="color: #00ffaa;">  ⚖️  TRIBUNAL: <span style="color: #ffffff;">${valor}</span></div>`;
+                    } else if (linha.startsWith("ID ETAPA:")) {
+                        const valor = linha.split(':').slice(1).join(':').trim();
+                        html += `<div style="color: #aaaaff;">  📊 ETAPA: <span style="color: #ffffff;">${valor}</span></div>`;
+                    } else if (linha.startsWith("ORÇAMENTO:")) {
+                        const valor = linha.split(':')[1].trim();
+                        html += `<div style="color: #ffaa00;">  💰 ORÇAMENTO: <span style="color: #ffffff; font-weight: bold;">${valor}</span></div>`;
+                    } else if (linha.startsWith("DATA:")) {
+                        const valor = linha.split(':').slice(1).join(':').trim();
+                        html += `<div style="color: #aaaaaa;">  📅 DATA: <span style="color: #ffffff;">${valor}</span></div>`;
+                    } else if (linha.includes("SUCESSO")) {
+                        html += `<div style="color: #00ff00; font-weight: bold; margin-top: 5px;">  ✅ ${linha}</div>`;
+                    }
+                });
+
+                html += `</div>`;
+            });
+
+            html += '<div style="color: #00ff00;">' + "=".repeat(80) + '</div>';
+            return html;
         }
 
         function formatarLogs(data) {
@@ -536,10 +630,10 @@
                 logsElement.classList.remove("loading");
                 
                 if (data && Array.isArray(data) && data.length > 0) {
-                    logsElement.textContent = "=".repeat(80) + "\n" + formatarLogs(data) + "\n" + "=".repeat(80);
+                    logsElement.innerHTML = formatarLogsHTML(data);
                 } else {
                     logsElement.classList.add("empty");
-                    logsElement.textContent = ">>> SISTEMA: Nenhum evento registrado neste periodo.\n>>> STATUS: Aguardando novos eventos...\n>>> Pressione [F5] para atualizar.";
+                    logsElement.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado neste periodo.</span>\n<span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span>\n<span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
                 }
             } catch (err) {
                 logsElement.classList.remove("loading");
