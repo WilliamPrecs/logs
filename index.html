@@ -1151,10 +1151,9 @@
         }
 
         // Barra de rolagem customizada e rolagem automática contínua
-        let autoScrollInterval = null;
-        let isUserScrolling = false;
-        let scrollTimeout = null;
-        let scrollPosition = 0; // Posição de rolagem global
+        let autoScrollAnimationId = null;
+        let isPaused = false;
+        let scrollPosition = 0;
 
         function atualizarScrollbarCustomizada() {
             const logsEl = document.getElementById('logs');
@@ -1182,72 +1181,87 @@
             thumbEl.style.top = thumbTop + 'px';
         }
 
+        let listenersAdicionados = false;
+        
         function iniciarRolagemAutomatica() {
             const logsEl = document.getElementById('logs');
-            if (!logsEl) return;
+            if (!logsEl) {
+                console.log('Elemento logs não encontrado, tentando novamente...');
+                setTimeout(iniciarRolagemAutomatica, 500);
+                return;
+            }
             
-            // Parar intervalo anterior
-            if (autoScrollInterval) {
-                clearInterval(autoScrollInterval);
+            // Parar animação anterior
+            if (autoScrollAnimationId) {
+                cancelAnimationFrame(autoScrollAnimationId);
             }
             
             // Resetar posição para o topo
             scrollPosition = 0;
             logsEl.scrollTop = 0;
+            isPaused = false;
             
-            let isPaused = false;
-            
-            // Detectar quando usuário interage (mouse sobre o elemento)
-            logsEl.addEventListener('mouseenter', function() {
-                isPaused = true;
-            });
-            
-            logsEl.addEventListener('mouseleave', function() {
-                isPaused = false;
-            });
-            
-            // Detectar scroll manual (wheel)
-            logsEl.addEventListener('wheel', function(e) {
-                isPaused = true;
-                scrollPosition = logsEl.scrollTop; // Sincronizar posição
+            // Adicionar listeners apenas uma vez
+            if (!listenersAdicionados) {
+                logsEl.addEventListener('mouseenter', function() {
+                    isPaused = true;
+                });
                 
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => {
+                logsEl.addEventListener('mouseleave', function() {
                     isPaused = false;
-                }, 2000);
-            });
-            
-            // Atualizar scrollbar quando rolar
-            logsEl.addEventListener('scroll', function() {
-                atualizarScrollbarCustomizada();
-                if (!isPaused) {
-                    scrollPosition = logsEl.scrollTop; // Sincronizar apenas se não estiver pausado
-                }
-            });
-            
-            // Rolagem automática contínua tipo esteira
-            autoScrollInterval = setInterval(() => {
-                if (!logsEl || isPaused) return;
+                });
                 
-                const maxScroll = logsEl.scrollHeight - logsEl.clientHeight;
+                logsEl.addEventListener('wheel', function() {
+                    isPaused = true;
+                    scrollPosition = logsEl.scrollTop;
+                    setTimeout(() => {
+                        isPaused = false;
+                    }, 2000);
+                });
                 
-                if (maxScroll <= 0) {
+                logsEl.addEventListener('scroll', function() {
                     atualizarScrollbarCustomizada();
+                });
+                
+                listenersAdicionados = true;
+            }
+            
+            // Função de animação usando requestAnimationFrame
+            function animarRolagem() {
+                const logsElAtual = document.getElementById('logs');
+                if (!logsElAtual) {
+                    autoScrollAnimationId = requestAnimationFrame(animarRolagem);
                     return;
                 }
                 
-                // Incrementar posição de rolagem
-                scrollPosition += 2; // Velocidade de rolagem (2px por frame)
+                const maxScroll = logsElAtual.scrollHeight - logsElAtual.clientHeight;
                 
-                // Se chegou ao final, volta ao topo
-                if (scrollPosition >= maxScroll) {
-                    scrollPosition = 0;
+                if (maxScroll <= 0) {
+                    atualizarScrollbarCustomizada();
+                    autoScrollAnimationId = requestAnimationFrame(animarRolagem);
+                    return;
                 }
                 
-                // Aplicar rolagem
-                logsEl.scrollTop = scrollPosition;
+                if (!isPaused) {
+                    // Incrementar posição de rolagem
+                    scrollPosition += 1.5; // Velocidade de rolagem
+                    
+                    // Se chegou ao final, volta ao topo
+                    if (scrollPosition >= maxScroll) {
+                        scrollPosition = 0;
+                    }
+                    
+                    // Aplicar rolagem diretamente
+                    logsElAtual.scrollTop = scrollPosition;
+                }
+                
                 atualizarScrollbarCustomizada();
-            }, 50); // Atualiza a cada 50ms
+                autoScrollAnimationId = requestAnimationFrame(animarRolagem);
+            }
+            
+            // Iniciar animação imediatamente
+            console.log('Iniciando rolagem automática');
+            autoScrollAnimationId = requestAnimationFrame(animarRolagem);
         }
 
         // Função para inicializar tudo
