@@ -1,8 +1,13 @@
 {
+  "version": 2,
   "functions": {
     "api/logs.py": {
-      "runtime": "python3.11"
+      "runtime": "vercel-python@3.11.0"
     }
-  }
+  },
+  "routes": [
+    { "src": "/api/logs", "dest": "/api/logs.py" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
 
