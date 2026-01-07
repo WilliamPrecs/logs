@@ -928,6 +928,99 @@
             return resultado.length > 0 ? resultado.join("\n") : "Sem logs relevantes para exibir";
         }
 
+        // Função para processar logs de movimentacoesWilliam e gerar resumo
+        function processarLogsMovimentacoes(data) {
+            if (!data || !Array.isArray(data)) return '';
+            
+            // Filtrar apenas logs de movimentacoesWilliam
+            const logsMovimentacoes = data.filter(log => log.origem === 'movimentacoesWilliam');
+            
+            if (logsMovimentacoes.length === 0) {
+                return '> Nenhuma operação de movimentações registrada';
+            }
+            
+            let resumo = [];
+            let ultimaOperacao = null;
+            let municipiosBanco = null;
+            let municipiosArquivo = null;
+            let totalRegistros = null;
+            let tabelaUsada = null;
+            let municipiosFaltando = [];
+            let statusOperacao = null;
+            
+            // Processar logs em ordem reversa (mais recentes primeiro)
+            for (let i = logsMovimentacoes.length - 1; i >= 0; i--) {
+                const log = logsMovimentacoes[i];
+                const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim(); // Remove emojis
+                
+                if (msg.includes('Download concluído')) {
+                    statusOperacao = 'Download concluído';
+                } else if (msg.includes('Conectando ao SQLite')) {
+                    statusOperacao = 'Conectado ao SQLite';
+                } else if (msg.includes('Conectando ao PostgreSQL')) {
+                    statusOperacao = 'Conectado ao PostgreSQL';
+                } else if (msg.includes('Usando tabela:')) {
+                    tabelaUsada = msg.split(':')[1]?.trim() || 'N/A';
+                } else if (msg.includes('Total de registros:')) {
+                    totalRegistros = msg.split(':')[1]?.trim() || 'N/A';
+                } else if (msg.includes('Municípios no banco de dados:')) {
+                    municipiosBanco = msg.split(':')[1]?.trim() || 'N/A';
+                } else if (msg.includes('Municípios no arquivo:')) {
+                    municipiosArquivo = msg.split(':')[1]?.trim() || 'N/A';
+                } else if (msg.includes('VALIDAÇÃO FALHOU')) {
+                    statusOperacao = 'Validação falhou';
+                } else if (msg.includes('Operação cancelada')) {
+                    statusOperacao = 'Operação cancelada';
+                } else if (msg.startsWith('- ') && statusOperacao === 'Validação falhou') {
+                    municipiosFaltando.push(msg.replace('- ', '').trim());
+                }
+            }
+            
+            // Construir resumo
+            resumo.push('> ========================================');
+            resumo.push('> RESUMO DE MOVIMENTAÇÕES');
+            resumo.push('> ========================================');
+            
+            if (statusOperacao) {
+                resumo.push(`> STATUS: ${statusOperacao}`);
+            }
+            
+            if (tabelaUsada) {
+                resumo.push(`> TABELA: ${tabelaUsada}`);
+            }
+            
+            if (totalRegistros) {
+                resumo.push(`> TOTAL DE REGISTROS: ${totalRegistros}`);
+            }
+            
+            if (municipiosBanco && municipiosArquivo) {
+                resumo.push(`> MUNICÍPIOS NO BANCO: ${municipiosBanco}`);
+                resumo.push(`> MUNICÍPIOS NO ARQUIVO: ${municipiosArquivo}`);
+                
+                const diferenca = parseInt(municipiosBanco) - parseInt(municipiosArquivo);
+                if (diferenca > 0) {
+                    resumo.push(`> DIFERENÇA: ${diferenca} município(s) a mais no banco`);
+                }
+            }
+            
+            if (municipiosFaltando.length > 0) {
+                resumo.push(`> MUNICÍPIOS FALTANDO NO ARQUIVO: ${municipiosFaltando.length}`);
+                municipiosFaltando.forEach(mun => {
+                    resumo.push(`>   - ${mun}`);
+                });
+            }
+            
+            if (logsMovimentacoes.length > 0) {
+                const ultimoLog = logsMovimentacoes[logsMovimentacoes.length - 1];
+                const horaAjustada = ajustarHorario(ultimoLog.data);
+                resumo.push(`> ÚLTIMA ATUALIZAÇÃO: ${horaAjustada}`);
+            }
+            
+            resumo.push('> ========================================');
+            
+            return resumo.join('\n');
+        }
+
         async function carregarLogs() {
             const contentEl = document.querySelector('.logs-content');
             if (!contentEl) return;
@@ -945,6 +1038,13 @@
                     const htmlContent = formatarLogsHTML(data);
                     // Duplicar conteúdo para scroll contínuo (rola para baixo, quando termina volta ao topo)
                     contentEl.innerHTML = htmlContent + htmlContent;
+                    
+                    // Processar logs de movimentacoesWilliam e atualizar terminal
+                    const terminalEl = document.getElementById('terminal');
+                    if (terminalEl) {
+                        const resumoMovimentacoes = processarLogsMovimentacoes(data);
+                        terminalEl.textContent = resumoMovimentacoes || '> TERMINAL PRONTO\n> Aguardando comandos...\n> Sistema operacional...\n> \n> _';
+                    }
                     
                     // Reiniciar animação: remover e readicionar para forçar restart
                     contentEl.style.animation = 'none';
