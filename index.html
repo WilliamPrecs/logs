@@ -160,31 +160,43 @@
             word-wrap: break-word;
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             color: #00ff00;
             margin: 0;
             text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
             scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #00ff00 #000000;
         }
 
-        /* Barra de rolagem estilizada estilo terminal */
+        /* Barra de rolagem estilizada estilo terminal - Webkit (Chrome, Edge, Safari) */
         #logs::-webkit-scrollbar {
-            width: 8px;
+            width: 10px !important;
+            background: #000000 !important;
         }
 
         #logs::-webkit-scrollbar-track {
-            background: #000000;
-            border-left: 1px solid #003300;
+            background: #000000 !important;
+            border-left: 2px solid #003300 !important;
+            box-shadow: inset 0 0 5px rgba(0, 51, 0, 0.5) !important;
         }
 
         #logs::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, #00ff00 0%, #00aa00 100%);
-            border-radius: 4px;
-            box-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
+            background: linear-gradient(180deg, #00ff00 0%, #00aa00 50%, #00ff00 100%) !important;
+            border-radius: 5px !important;
+            border: 1px solid #003300 !important;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.7), inset 0 0 3px rgba(0, 255, 0, 0.3) !important;
+            min-height: 30px;
         }
 
         #logs::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, #00ff00 0%, #00ff00 100%);
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+            background: linear-gradient(180deg, #00ff00 0%, #00ff00 50%, #00ff00 100%) !important;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 1), inset 0 0 5px rgba(0, 255, 0, 0.5) !important;
+        }
+
+        #logs::-webkit-scrollbar-thumb:active {
+            background: #00ff00 !important;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 1.2) !important;
         }
 
         #terminal,
@@ -198,35 +210,48 @@
             word-wrap: break-word;
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             color: #00ff00;
             margin: 0;
             text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
             scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #00ff00 #000000;
         }
 
-        /* Barra de rolagem estilizada para terminal */
+        /* Barra de rolagem estilizada para terminal - Webkit */
         #terminal::-webkit-scrollbar,
         .terminal-output::-webkit-scrollbar {
-            width: 8px;
+            width: 10px !important;
+            background: #000000 !important;
         }
 
         #terminal::-webkit-scrollbar-track,
         .terminal-output::-webkit-scrollbar-track {
-            background: #000000;
-            border-left: 1px solid #003300;
+            background: #000000 !important;
+            border-left: 2px solid #003300 !important;
+            box-shadow: inset 0 0 5px rgba(0, 51, 0, 0.5) !important;
         }
 
         #terminal::-webkit-scrollbar-thumb,
         .terminal-output::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, #00ff00 0%, #00aa00 100%);
-            border-radius: 4px;
-            box-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
+            background: linear-gradient(180deg, #00ff00 0%, #00aa00 50%, #00ff00 100%) !important;
+            border-radius: 5px !important;
+            border: 1px solid #003300 !important;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.7), inset 0 0 3px rgba(0, 255, 0, 0.3) !important;
+            min-height: 30px;
         }
 
         #terminal::-webkit-scrollbar-thumb:hover,
         .terminal-output::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, #00ff00 0%, #00ff00 100%);
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+            background: linear-gradient(180deg, #00ff00 0%, #00ff00 50%, #00ff00 100%) !important;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 1), inset 0 0 5px rgba(0, 255, 0, 0.5) !important;
+        }
+
+        #terminal::-webkit-scrollbar-thumb:active,
+        .terminal-output::-webkit-scrollbar-thumb:active {
+            background: #00ff00 !important;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 1.2) !important;
         }
 
         .loading {
@@ -735,13 +760,19 @@
                 
                 if (data && Array.isArray(data) && data.length > 0) {
                     logsElement.innerHTML = formatarLogsHTML(data);
-                    // Rolagem suave e contínua para o final
+                    // Rolagem suave e contínua para o final - múltiplas tentativas para garantir
+                    setTimeout(() => {
+                        logsElement.scrollTop = logsElement.scrollHeight;
+                    }, 50);
                     setTimeout(() => {
                         logsElement.scrollTo({
                             top: logsElement.scrollHeight,
                             behavior: 'smooth'
                         });
-                    }, 150);
+                    }, 200);
+                    setTimeout(() => {
+                        logsElement.scrollTop = logsElement.scrollHeight;
+                    }, 500);
                 } else {
                     logsElement.classList.add("empty");
                     logsElement.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado 10 minutos atrás.</span>\n<span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span>\n<span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
@@ -773,6 +804,43 @@
                 console.error("Erro completo:", err);
             }
         }
+
+        // Função auxiliar para rolagem automática
+        function rolarParaFinal() {
+            const logsEl = document.getElementById('logs');
+            if (logsEl) {
+                // Múltiplas tentativas para garantir rolagem
+                setTimeout(() => {
+                    logsEl.scrollTop = logsEl.scrollHeight;
+                }, 50);
+                setTimeout(() => {
+                    logsEl.scrollTo({
+                        top: logsEl.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 200);
+                setTimeout(() => {
+                    logsEl.scrollTop = logsEl.scrollHeight;
+                }, 500);
+            }
+        }
+
+        // Observador para detectar mudanças no conteúdo e rolar automaticamente
+        const logsObserver = new MutationObserver(() => {
+            rolarParaFinal();
+        });
+
+        // Iniciar observação quando o elemento estiver disponível
+        setTimeout(() => {
+            const logsEl = document.getElementById('logs');
+            if (logsEl) {
+                logsObserver.observe(logsEl, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true
+                });
+            }
+        }, 500);
 
         // Carregar logs ao carregar a página
         carregarLogs();
