@@ -1193,12 +1193,46 @@
                 return '> Nenhuma operação de discador registrada';
             }
             
-            // Processar logs em ordem cronológica para encontrar o último evento completo
+            // Estatísticas gerais
+            let totalInseridos = 0;
+            let totalProcessados = 0;
+            let tribunaisProcessados = new Set();
+            let orcamentosProcessados = new Set();
+            
+            // Dados do último evento completo
             let ultimoTribunal = null;
             let ultimaData = null;
             let ultimoOrcamento = null;
             let statusOperacao = null;
-            let totalInseridos = 0;
+            let ultimoIdNegocio = null;
+            
+            // Processar todos os logs para estatísticas
+            for (let i = 0; i < logsDiscador.length; i++) {
+                const log = logsDiscador[i];
+                const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
+                
+                if (msg.includes('DADOS INSERIDOS NO BANCO COM SUCESSO')) {
+                    totalInseridos++;
+                }
+                
+                if (msg.includes('ID_NEGOCIO ENCONTRADO')) {
+                    totalProcessados++;
+                }
+                
+                if (msg.includes('tribunal:')) {
+                    const tribunal = msg.split(':')[1]?.trim();
+                    if (tribunal) {
+                        tribunaisProcessados.add(tribunal);
+                    }
+                }
+                
+                if (msg.includes('ORÇAMENTO CONVERTIDO:')) {
+                    const orcamento = msg.split(':')[1]?.trim();
+                    if (orcamento) {
+                        orcamentosProcessados.add(orcamento);
+                    }
+                }
+            }
             
             // Processar do mais recente para o mais antigo para pegar o último evento completo
             for (let i = logsDiscador.length - 1; i >= 0; i--) {
@@ -1207,11 +1241,9 @@
                 
                 // Procurar pelo último evento completo (que termina com "DADOS INSERIDOS NO BANCO COM SUCESSO")
                 if (msg.includes('DADOS INSERIDOS NO BANCO COM SUCESSO')) {
-                    totalInseridos++;
                     statusOperacao = 'Sucesso';
                     // Quando encontrar sucesso, pegar os dados anteriores desse evento
-                    // Continuar processando para trás para pegar os dados desse evento
-                    for (let j = i; j >= Math.max(0, i - 10); j--) {
+                    for (let j = i; j >= Math.max(0, i - 15); j--) {
                         const logAnterior = logsDiscador[j];
                         const msgAnterior = logAnterior.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
                         
@@ -1221,6 +1253,12 @@
                             ultimaData = msgAnterior.split(':').slice(1).join(':').trim() || null;
                         } else if (msgAnterior.includes('ORÇAMENTO CONVERTIDO:')) {
                             ultimoOrcamento = msgAnterior.split(':')[1]?.trim() || null;
+                        } else if (msgAnterior.includes('ID_NEGOCIO ENCONTRADO')) {
+                            // Tentar extrair ID do negócio
+                            const match = msgAnterior.match(/ID_NEGOCIO[:\s]+(\d+)/i);
+                            if (match) {
+                                ultimoIdNegocio = match[1];
+                            }
                         }
                     }
                     break; // Pegou o último evento completo, pode parar
@@ -1237,20 +1275,35 @@
                 resumo.push(`> STATUS: ${statusOperacao}`);
             }
             
-            if (totalInseridos > 0) {
-                resumo.push(`> REGISTROS INSERIDOS: ${totalInseridos}`);
+            resumo.push(`> TOTAL DE LOGS: ${logsDiscador.length}`);
+            resumo.push(`> REGISTROS PROCESSADOS: ${totalProcessados}`);
+            resumo.push(`> REGISTROS INSERIDOS: ${totalInseridos}`);
+            
+            if (tribunaisProcessados.size > 0) {
+                resumo.push(`> TRIBUNAIS PROCESSADOS: ${tribunaisProcessados.size}`);
+            }
+            
+            if (orcamentosProcessados.size > 0) {
+                resumo.push(`> ORÇAMENTOS PROCESSADOS: ${orcamentosProcessados.size}`);
+            }
+            
+            resumo.push('');
+            resumo.push('> ÚLTIMO EVENTO:');
+            
+            if (ultimoIdNegocio) {
+                resumo.push(`> ID NEGÓCIO: ${ultimoIdNegocio}`);
             }
             
             if (ultimoTribunal) {
-                resumo.push(`> ÚLTIMO TRIBUNAL: ${ultimoTribunal}`);
+                resumo.push(`> TRIBUNAL: ${ultimoTribunal}`);
             }
             
             if (ultimaData) {
-                resumo.push(`> ÚLTIMA DATA: ${ultimaData}`);
+                resumo.push(`> DATA: ${ultimaData}`);
             }
             
             if (ultimoOrcamento) {
-                resumo.push(`> ÚLTIMO ORÇAMENTO: ${ultimoOrcamento}`);
+                resumo.push(`> ORÇAMENTO: ${ultimoOrcamento}`);
             }
             
             if (logsDiscador.length > 0) {
