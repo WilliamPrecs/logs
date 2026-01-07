@@ -1182,15 +1182,17 @@
         }
 
         function iniciarRolagemAutomatica() {
-            const logsEl = document.getElementById('logs');
-            if (!logsEl) {
-                console.log('Elemento logs não encontrado');
-                return;
-            }
-            
             // Parar intervalo anterior
             if (autoScrollInterval) {
                 clearInterval(autoScrollInterval);
+                autoScrollInterval = null;
+            }
+            
+            const logsEl = document.getElementById('logs');
+            if (!logsEl) {
+                console.log('Elemento logs não encontrado, tentando novamente em 500ms...');
+                setTimeout(iniciarRolagemAutomatica, 500);
+                return;
             }
             
             // Resetar posição
@@ -1198,14 +1200,49 @@
             logsEl.scrollTop = 0;
             isPaused = false;
             
-            // Adicionar listeners
+            console.log('Iniciando rolagem automática...');
+            
+            // Rolagem automática - implementação direta e garantida
+            autoScrollInterval = setInterval(function() {
+                const el = document.getElementById('logs');
+                if (!el) {
+                    console.log('Elemento não encontrado no intervalo');
+                    return;
+                }
+                
+                const scrollHeight = el.scrollHeight;
+                const clientHeight = el.clientHeight;
+                const maxScroll = scrollHeight - clientHeight;
+                
+                // Se não há conteúdo para rolar, apenas atualiza scrollbar
+                if (maxScroll <= 0) {
+                    atualizarScrollbarCustomizada();
+                    return;
+                }
+                
+                // Se não está pausado, rola para baixo
+                if (!isPaused) {
+                    scrollPosition += 2; // Incrementa 2px por vez
+                    
+                    // Se chegou ao final, volta ao topo
+                    if (scrollPosition >= maxScroll) {
+                        scrollPosition = 0;
+                    }
+                    
+                    // Aplica a rolagem
+                    el.scrollTop = scrollPosition;
+                    atualizarScrollbarCustomizada();
+                }
+            }, 50); // Executa a cada 50ms
+            
+            // Adicionar listeners para pausar quando usuário interage
             logsEl.addEventListener('mouseenter', function() {
                 isPaused = true;
-            });
+            }, { once: false });
             
             logsEl.addEventListener('mouseleave', function() {
                 isPaused = false;
-            });
+            }, { once: false });
             
             logsEl.addEventListener('wheel', function() {
                 isPaused = true;
@@ -1213,84 +1250,39 @@
                 setTimeout(() => {
                     isPaused = false;
                 }, 2000);
-            });
+            }, { once: false });
             
-            // Rolagem automática - implementação simples e direta
-            autoScrollInterval = setInterval(function() {
-                const el = document.getElementById('logs');
-                if (!el) return;
-                
-                const maxScroll = el.scrollHeight - el.clientHeight;
-                
-                if (maxScroll <= 0) {
-                    atualizarScrollbarCustomizada();
-                    return;
-                }
-                
-                if (!isPaused) {
-                    scrollPosition += 2;
-                    
-                    if (scrollPosition >= maxScroll) {
-                        scrollPosition = 0;
-                    }
-                    
-                    el.scrollTop = scrollPosition;
-                    atualizarScrollbarCustomizada();
-                }
-            }, 50);
-            
-            console.log('Rolagem automática iniciada');
+            console.log('Rolagem automática ATIVA!');
         }
 
-        // Função para inicializar tudo
-        function inicializarSistema() {
+        // Função para inicializar rolagem automática
+        function inicializarRolagem() {
             const logsEl = document.getElementById('logs');
-            if (!logsEl) {
-                setTimeout(inicializarSistema, 500);
-                return;
-            }
-            
-            // Resetar para o topo
-            logsEl.scrollTop = 0;
-            atualizarScrollbarCustomizada();
-            iniciarRolagemAutomatica();
-            
-            // Atualizar scrollbar quando conteúdo mudar
-            const observer = new MutationObserver(() => {
+            if (logsEl) {
+                logsEl.scrollTop = 0;
                 atualizarScrollbarCustomizada();
-            });
-            observer.observe(logsEl, { childList: true, subtree: true });
-        }
-        
-        // Inicializar quando a página carregar - múltiplas tentativas
-        function tentarInicializar() {
-            const logsEl = document.getElementById('logs');
-            if (logsEl && logsEl.innerHTML.trim() !== 'Inicializando sistema... Aguarde...') {
-                inicializarSistema();
-            } else {
-                setTimeout(tentarInicializar, 500);
+                iniciarRolagemAutomatica();
             }
         }
         
-        // Tentar inicializar imediatamente
-        tentarInicializar();
-        
-        // Também tentar quando DOM estiver pronto
+        // Inicializar quando DOM estiver pronto
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', tentarInicializar);
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(inicializarRolagem, 1000);
+            });
         } else {
-            tentarInicializar();
+            setTimeout(inicializarRolagem, 1000);
         }
         
-        // E quando a página carregar completamente
+        // Também quando a página carregar completamente
         window.addEventListener('load', function() {
-            setTimeout(tentarInicializar, 1000);
+            setTimeout(inicializarRolagem, 1500);
         });
         
-        // Garantir que seja chamado após carregar logs
+        // E garantir após 3 segundos (quando logs provavelmente já carregaram)
         setTimeout(function() {
             iniciarRolagemAutomatica();
-        }, 2000);
+        }, 3000);
     </script>
 </body>
 </html>
