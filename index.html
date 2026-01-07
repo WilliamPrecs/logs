@@ -1151,7 +1151,7 @@
         }
 
         // Barra de rolagem customizada e rolagem automática contínua
-        let autoScrollAnimationId = null;
+        let autoScrollInterval = null;
         let isPaused = false;
         let scrollPosition = 0;
 
@@ -1181,87 +1181,65 @@
             thumbEl.style.top = thumbTop + 'px';
         }
 
-        let listenersAdicionados = false;
-        
         function iniciarRolagemAutomatica() {
             const logsEl = document.getElementById('logs');
             if (!logsEl) {
-                console.log('Elemento logs não encontrado, tentando novamente...');
-                setTimeout(iniciarRolagemAutomatica, 500);
+                console.log('Elemento logs não encontrado');
                 return;
             }
             
-            // Parar animação anterior
-            if (autoScrollAnimationId) {
-                cancelAnimationFrame(autoScrollAnimationId);
+            // Parar intervalo anterior
+            if (autoScrollInterval) {
+                clearInterval(autoScrollInterval);
             }
             
-            // Resetar posição para o topo
+            // Resetar posição
             scrollPosition = 0;
             logsEl.scrollTop = 0;
             isPaused = false;
             
-            // Adicionar listeners apenas uma vez
-            if (!listenersAdicionados) {
-                logsEl.addEventListener('mouseenter', function() {
-                    isPaused = true;
-                });
-                
-                logsEl.addEventListener('mouseleave', function() {
-                    isPaused = false;
-                });
-                
-                logsEl.addEventListener('wheel', function() {
-                    isPaused = true;
-                    scrollPosition = logsEl.scrollTop;
-                    setTimeout(() => {
-                        isPaused = false;
-                    }, 2000);
-                });
-                
-                logsEl.addEventListener('scroll', function() {
-                    atualizarScrollbarCustomizada();
-                });
-                
-                listenersAdicionados = true;
-            }
+            // Adicionar listeners
+            logsEl.addEventListener('mouseenter', function() {
+                isPaused = true;
+            });
             
-            // Função de animação usando requestAnimationFrame
-            function animarRolagem() {
-                const logsElAtual = document.getElementById('logs');
-                if (!logsElAtual) {
-                    autoScrollAnimationId = requestAnimationFrame(animarRolagem);
-                    return;
-                }
+            logsEl.addEventListener('mouseleave', function() {
+                isPaused = false;
+            });
+            
+            logsEl.addEventListener('wheel', function() {
+                isPaused = true;
+                scrollPosition = logsEl.scrollTop;
+                setTimeout(() => {
+                    isPaused = false;
+                }, 2000);
+            });
+            
+            // Rolagem automática - implementação simples e direta
+            autoScrollInterval = setInterval(function() {
+                const el = document.getElementById('logs');
+                if (!el) return;
                 
-                const maxScroll = logsElAtual.scrollHeight - logsElAtual.clientHeight;
+                const maxScroll = el.scrollHeight - el.clientHeight;
                 
                 if (maxScroll <= 0) {
                     atualizarScrollbarCustomizada();
-                    autoScrollAnimationId = requestAnimationFrame(animarRolagem);
                     return;
                 }
                 
                 if (!isPaused) {
-                    // Incrementar posição de rolagem
-                    scrollPosition += 1.5; // Velocidade de rolagem
+                    scrollPosition += 2;
                     
-                    // Se chegou ao final, volta ao topo
                     if (scrollPosition >= maxScroll) {
                         scrollPosition = 0;
                     }
                     
-                    // Aplicar rolagem diretamente
-                    logsElAtual.scrollTop = scrollPosition;
+                    el.scrollTop = scrollPosition;
+                    atualizarScrollbarCustomizada();
                 }
-                
-                atualizarScrollbarCustomizada();
-                autoScrollAnimationId = requestAnimationFrame(animarRolagem);
-            }
+            }, 50);
             
-            // Iniciar animação imediatamente
-            console.log('Iniciando rolagem automática');
-            autoScrollAnimationId = requestAnimationFrame(animarRolagem);
+            console.log('Rolagem automática iniciada');
         }
 
         // Função para inicializar tudo
@@ -1284,18 +1262,35 @@
             observer.observe(logsEl, { childList: true, subtree: true });
         }
         
-        // Inicializar quando a página carregar
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(inicializarSistema, 1000);
-            });
-        } else {
-            setTimeout(inicializarSistema, 1000);
+        // Inicializar quando a página carregar - múltiplas tentativas
+        function tentarInicializar() {
+            const logsEl = document.getElementById('logs');
+            if (logsEl && logsEl.innerHTML.trim() !== 'Inicializando sistema... Aguarde...') {
+                inicializarSistema();
+            } else {
+                setTimeout(tentarInicializar, 500);
+            }
         }
         
+        // Tentar inicializar imediatamente
+        tentarInicializar();
+        
+        // Também tentar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', tentarInicializar);
+        } else {
+            tentarInicializar();
+        }
+        
+        // E quando a página carregar completamente
         window.addEventListener('load', function() {
-            setTimeout(inicializarSistema, 1000);
+            setTimeout(tentarInicializar, 1000);
         });
+        
+        // Garantir que seja chamado após carregar logs
+        setTimeout(function() {
+            iniciarRolagemAutomatica();
+        }, 2000);
     </script>
 </body>
 </html>
