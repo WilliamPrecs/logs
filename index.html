@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Logs</title>
+    <title>MONITOR DE LOGS - SISTEMA</title>
     <style>
         * {
             margin: 0;
@@ -12,136 +12,141 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Consolas', 'Courier New', monospace;
+            background: #000000;
+            color: #00ff00;
             min-height: 100vh;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            overflow: hidden;
         }
 
         .container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            padding: 30px;
-            max-width: 900px;
+            background: #000000;
             width: 100%;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
         }
 
         h3 {
-            color: #333;
+            color: #00ff00;
+            font-size: 32px;
+            font-weight: normal;
             margin-bottom: 20px;
-            font-size: 24px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+            padding: 15px 20px;
+            border: 2px solid #00ff00;
+            background: #001100;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        h3::before {
+            content: 'C:\\> ';
+            color: #00aa00;
         }
 
         #logs {
-            background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            background: #000000;
             padding: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.8;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 20px;
+            line-height: 1.6;
             white-space: pre-wrap;
             word-wrap: break-word;
-            max-height: 600px;
+            flex: 1;
             overflow-y: auto;
-            color: #333;
+            color: #00ff00;
+            border: 2px solid #00ff00;
         }
 
-        .log-entry {
-            margin-bottom: 8px;
-            padding: 4px 0;
+        #logs::-webkit-scrollbar {
+            width: 12px;
         }
 
-        .log-separator {
-            color: #999;
-            font-weight: bold;
-            margin: 12px 0 8px 0;
-            border-top: 1px solid #ddd;
-            padding-top: 8px;
+        #logs::-webkit-scrollbar-track {
+            background: #000000;
         }
 
-        .log-important {
-            color: #2c3e50;
-            font-weight: bold;
-        }
-
-        .log-success {
-            color: #27ae60;
-            font-weight: bold;
-        }
-
-        .log-data {
-            color: #7f8c8d;
+        #logs::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border: 1px solid #000000;
         }
 
         .loading {
-            color: #667eea;
-            font-style: italic;
+            color: #00ff00;
+            animation: blink 1s infinite;
         }
 
         .error {
-            color: #e74c3c;
+            color: #ff0000;
             font-weight: bold;
         }
 
         .empty {
-            color: #95a5a6;
-            font-style: italic;
+            color: #00aa00;
         }
 
         .refresh-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
+            background: #00ff00;
+            color: #000000;
+            border: 2px solid #00ff00;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-weight: bold;
             cursor: pointer;
             margin-top: 15px;
-            transition: background 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
         }
 
         .refresh-btn:hover {
-            background: #5568d3;
+            background: #000000;
+            color: #00ff00;
         }
 
         .refresh-btn:active {
-            transform: scale(0.98);
+            background: #003300;
         }
 
         .refresh-btn:disabled {
-            background: #ccc;
+            background: #003300;
+            color: #005500;
+            border-color: #005500;
             cursor: not-allowed;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
 
-            h3 {
-                font-size: 20px;
-            }
-
-            #logs {
-                font-size: 12px;
-                padding: 15px;
-            }
+        /* Efeito de scan line do terminal */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 0, 0.03) 0px,
+                rgba(0, 255, 0, 0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h3>Logs</h3>
-        <pre id="logs" class="loading">Carregando logs...</pre>
-        <button id="refreshBtn" class="refresh-btn">Atualizar</button>
+        <h3>Monitor de Logs - Sistema em Execução</h3>
+        <pre id="logs" class="loading">Inicializando sistema... Aguarde...</pre>
+        <button id="refreshBtn" class="refresh-btn">[F5] Atualizar</button>
     </div>
 
     <script>
@@ -440,7 +445,7 @@
         async function carregarLogs() {
             logsElement.classList.remove("error", "empty");
             logsElement.classList.add("loading");
-            logsElement.textContent = "Carregando logs...";
+            logsElement.textContent = ">>> Carregando dados do sistema...\n>>> Conectando ao servidor...\n>>> Aguarde...";
             refreshBtn.disabled = true;
 
             try {
@@ -450,32 +455,34 @@
                 refreshBtn.disabled = false;
                 
                 if (data && Array.isArray(data) && data.length > 0) {
-                    logsElement.textContent = formatarLogs(data);
+                    logsElement.textContent = "=".repeat(80) + "\n" + formatarLogs(data) + "\n" + "=".repeat(80);
                 } else {
                     logsElement.classList.add("empty");
-                    logsElement.textContent = "Sem logs nesse período";
+                    logsElement.textContent = ">>> SISTEMA: Nenhum evento registrado neste periodo.\n>>> STATUS: Aguardando novos eventos...\n>>> Pressione [F5] para atualizar.";
                 }
             } catch (err) {
                 logsElement.classList.remove("loading");
                 logsElement.classList.add("error");
                 refreshBtn.disabled = false;
                 
-                let mensagemErro = "Erro ao carregar logs.\n\n";
+                let mensagemErro = ">>> ERRO CRITICO: Falha na comunicacao com o servidor\n";
+                mensagemErro += ">>> " + "=".repeat(74) + "\n\n";
                 
                 if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-                    mensagemErro += "Possíveis causas:\n";
-                    mensagemErro += "• Problema de conexão com a internet\n";
-                    mensagemErro += "• A API pode estar temporariamente indisponível\n";
-                    mensagemErro += "• Problema de CORS bloqueado\n";
-                    mensagemErro += "• Firewall ou antivírus bloqueando a requisição\n\n";
-                    mensagemErro += "Soluções:\n";
-                    mensagemErro += "1. Execute o servidor Python: python server.py\n";
-                    mensagemErro += "2. Ou use Live Server no VS Code\n";
-                    mensagemErro += "3. Verifique sua conexão com a internet\n";
-                    mensagemErro += "4. Verifique se a URL está acessível no navegador";
+                    mensagemErro += ">>> DIAGNOSTICO:\n";
+                    mensagemErro += ">>>   - Problema de conexao detectado\n";
+                    mensagemErro += ">>>   - Servidor pode estar offline\n";
+                    mensagemErro += ">>>   - Firewall bloqueando requisicao\n\n";
+                    mensagemErro += ">>> ACOES RECOMENDADAS:\n";
+                    mensagemErro += ">>>   1. Verificar conexao de rede\n";
+                    mensagemErro += ">>>   2. Contatar administrador do sistema\n";
+                    mensagemErro += ">>>   3. Pressionar [F5] para tentar novamente\n";
                 } else {
-                    mensagemErro += `Detalhes: ${err.message}`;
+                    mensagemErro += `>>> DETALHES: ${err.message}\n`;
+                    mensagemErro += ">>> Pressione [F5] para tentar novamente\n";
                 }
+                
+                mensagemErro += "\n>>> " + "=".repeat(74);
                 
                 logsElement.textContent = mensagemErro;
                 console.error("Erro completo:", err);
