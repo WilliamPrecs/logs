@@ -159,13 +159,32 @@
             white-space: pre-wrap;
             word-wrap: break-word;
             flex: 1;
-            overflow-y: hidden;
+            overflow-y: auto;
             color: #00ff00;
             margin: 0;
             text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
+            scroll-behavior: smooth;
+        }
+
+        /* Barra de rolagem estilizada estilo terminal */
+        #logs::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #logs::-webkit-scrollbar-track {
+            background: #000000;
+            border-left: 1px solid #003300;
+        }
+
+        #logs::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #00ff00 0%, #00aa00 100%);
+            border-radius: 4px;
+            box-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
+        }
+
+        #logs::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #00ff00 0%, #00ff00 100%);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
         }
 
         #terminal,
@@ -182,22 +201,32 @@
             color: #00ff00;
             margin: 0;
             text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+            scroll-behavior: smooth;
         }
 
+        /* Barra de rolagem estilizada para terminal */
         #terminal::-webkit-scrollbar,
         .terminal-output::-webkit-scrollbar {
-            width: 12px;
+            width: 8px;
         }
 
         #terminal::-webkit-scrollbar-track,
         .terminal-output::-webkit-scrollbar-track {
             background: #000000;
+            border-left: 1px solid #003300;
         }
 
         #terminal::-webkit-scrollbar-thumb,
         .terminal-output::-webkit-scrollbar-thumb {
-            background: #00ff00;
-            border: 1px solid #000000;
+            background: linear-gradient(180deg, #00ff00 0%, #00aa00 100%);
+            border-radius: 4px;
+            box-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
+        }
+
+        #terminal::-webkit-scrollbar-thumb:hover,
+        .terminal-output::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #00ff00 0%, #00ff00 100%);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
         }
 
         .loading {
@@ -706,10 +735,13 @@
                 
                 if (data && Array.isArray(data) && data.length > 0) {
                     logsElement.innerHTML = formatarLogsHTML(data);
-                    // Rola para o final para mostrar logs mais recentes
+                    // Rolagem suave e contínua para o final
                     setTimeout(() => {
-                        logsElement.scrollTop = logsElement.scrollHeight;
-                    }, 100);
+                        logsElement.scrollTo({
+                            top: logsElement.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    }, 150);
                 } else {
                     logsElement.classList.add("empty");
                     logsElement.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado 10 minutos atrás.</span>\n<span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span>\n<span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
