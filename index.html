@@ -354,7 +354,7 @@
         }
 
         .loading {
-            color: #00ff00;
+            color: #00ff00 !important;
             animation: blink 1s infinite;
         }
 
@@ -364,7 +364,13 @@
         }
 
         .empty {
-            color: #00aa00;
+            color: #00ff00 !important;
+        }
+        
+        /* Garantir que ambos os terminais tenham a mesma cor */
+        #logs, #terminal, .terminal-output {
+            color: #00ff00 !important;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5) !important;
         }
 
         .refresh-btn {
@@ -1154,6 +1160,8 @@
                         // Só atualiza se o conteúdo realmente mudou (evita piscar)
                         if (novoConteudoNormalizado !== conteudoAtualNormalizado && novoConteudoNormalizado !== ultimoConteudoLogs) {
                             requestAnimationFrame(() => {
+                                // Remove classes que alteram a cor para garantir cor consistente
+                                logsEl.classList.remove("loading", "error", "empty");
                                 logsEl.textContent = novoConteudo;
                                 ultimoConteudoLogs = novoConteudoNormalizado;
                             });
@@ -1170,6 +1178,8 @@
                         // Só atualiza se o conteúdo realmente mudou (evita piscar)
                         if (novoConteudoTerminalNormalizado !== conteudoAtualTerminalNormalizado && novoConteudoTerminalNormalizado !== ultimoConteudoTerminal) {
                             requestAnimationFrame(() => {
+                                // Remove classes que alteram a cor para garantir cor consistente
+                                terminalEl.classList.remove("loading", "error", "empty");
                                 terminalEl.textContent = novoConteudoTerminal;
                                 ultimoConteudoTerminal = novoConteudoTerminalNormalizado;
                             });
@@ -1183,6 +1193,8 @@
                         
                         if (msgVazioNormalizado !== conteudoAtualNormalizado && msgVazioNormalizado !== ultimoConteudoLogs) {
                             requestAnimationFrame(() => {
+                                // Remove classes que alteram a cor para garantir cor consistente
+                                logsEl.classList.remove("loading", "error", "empty");
                                 logsEl.textContent = msgVazio;
                                 ultimoConteudoLogs = msgVazioNormalizado;
                             });
@@ -1195,6 +1207,8 @@
                         
                         if (msgVazioTerminalNormalizado !== conteudoAtualTerminalNormalizado && msgVazioTerminalNormalizado !== ultimoConteudoTerminal) {
                             requestAnimationFrame(() => {
+                                // Remove classes que alteram a cor para garantir cor consistente
+                                terminalEl.classList.remove("loading", "error", "empty");
                                 terminalEl.textContent = msgVazioTerminal;
                                 ultimoConteudoTerminal = msgVazioTerminalNormalizado;
                             });
