@@ -1112,6 +1112,13 @@
 
         // Flag para controlar primeira carga
         let primeiraCarga = true;
+        let ultimoConteudoLogs = '';
+        let ultimoConteudoTerminal = '';
+
+        // Função auxiliar para normalizar conteúdo (remove espaços extras e normaliza quebras de linha)
+        function normalizarConteudo(texto) {
+            return texto.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+        }
 
         async function carregarLogs() {
             const logsEl = document.getElementById('logs');
@@ -1120,6 +1127,7 @@
             // Só mostra "Carregando..." na primeira vez
             if (logsEl && primeiraCarga) {
                 logsEl.textContent = ">>> Carregando dados do sistema...\n>>> Conectando ao servidor...\n>>> Aguarde...";
+                ultimoConteudoLogs = logsEl.textContent;
             }
 
             try {
@@ -1130,9 +1138,15 @@
                     if (logsEl) {
                         const resumoMetas = processarLogsMetasDiarias(data);
                         const novoConteudo = resumoMetas || '> Nenhum evento de negócio registrado';
-                        // Só atualiza se o conteúdo mudou (evita piscar)
-                        if (logsEl.textContent !== novoConteudo) {
-                            logsEl.textContent = novoConteudo;
+                        const novoConteudoNormalizado = normalizarConteudo(novoConteudo);
+                        const conteudoAtualNormalizado = normalizarConteudo(logsEl.textContent);
+                        
+                        // Só atualiza se o conteúdo realmente mudou (evita piscar)
+                        if (novoConteudoNormalizado !== conteudoAtualNormalizado && novoConteudoNormalizado !== ultimoConteudoLogs) {
+                            requestAnimationFrame(() => {
+                                logsEl.textContent = novoConteudo;
+                                ultimoConteudoLogs = novoConteudoNormalizado;
+                            });
                         }
                     }
                     
@@ -1140,22 +1154,40 @@
                     if (terminalEl) {
                         const resumoMovimentacoes = processarLogsMovimentacoes(data);
                         const novoConteudoTerminal = resumoMovimentacoes || '> Nenhuma operação de movimentações registrada';
-                        // Só atualiza se o conteúdo mudou (evita piscar)
-                        if (terminalEl.textContent !== novoConteudoTerminal) {
-                            terminalEl.textContent = novoConteudoTerminal;
+                        const novoConteudoTerminalNormalizado = normalizarConteudo(novoConteudoTerminal);
+                        const conteudoAtualTerminalNormalizado = normalizarConteudo(terminalEl.textContent);
+                        
+                        // Só atualiza se o conteúdo realmente mudou (evita piscar)
+                        if (novoConteudoTerminalNormalizado !== conteudoAtualTerminalNormalizado && novoConteudoTerminalNormalizado !== ultimoConteudoTerminal) {
+                            requestAnimationFrame(() => {
+                                terminalEl.textContent = novoConteudoTerminal;
+                                ultimoConteudoTerminal = novoConteudoTerminalNormalizado;
+                            });
                         }
                     }
                 } else {
                     if (logsEl) {
                         const msgVazio = '> Nenhum evento registrado 10 minutos atrás.\n> STATUS: Aguardando novos eventos...\n> Pressione [F5] para atualizar.';
-                        if (logsEl.textContent !== msgVazio) {
-                            logsEl.textContent = msgVazio;
+                        const msgVazioNormalizado = normalizarConteudo(msgVazio);
+                        const conteudoAtualNormalizado = normalizarConteudo(logsEl.textContent);
+                        
+                        if (msgVazioNormalizado !== conteudoAtualNormalizado && msgVazioNormalizado !== ultimoConteudoLogs) {
+                            requestAnimationFrame(() => {
+                                logsEl.textContent = msgVazio;
+                                ultimoConteudoLogs = msgVazioNormalizado;
+                            });
                         }
                     }
                     if (terminalEl) {
                         const msgVazioTerminal = '> Nenhuma operação de movimentações registrada';
-                        if (terminalEl.textContent !== msgVazioTerminal) {
-                            terminalEl.textContent = msgVazioTerminal;
+                        const msgVazioTerminalNormalizado = normalizarConteudo(msgVazioTerminal);
+                        const conteudoAtualTerminalNormalizado = normalizarConteudo(terminalEl.textContent);
+                        
+                        if (msgVazioTerminalNormalizado !== conteudoAtualTerminalNormalizado && msgVazioTerminalNormalizado !== ultimoConteudoTerminal) {
+                            requestAnimationFrame(() => {
+                                terminalEl.textContent = msgVazioTerminal;
+                                ultimoConteudoTerminal = msgVazioTerminalNormalizado;
+                            });
                         }
                     }
                 }
@@ -1164,9 +1196,6 @@
                 primeiraCarga = false;
             } catch (err) {
                 if (logsEl) {
-                    logsEl.classList.remove("loading");
-                    logsEl.classList.add("error");
-                    
                     let mensagemErro = ">>> ERRO CRITICO: Falha na comunicacao com o servidor\n";
                     mensagemErro += ">>> " + "=".repeat(74) + "\n\n";
                     
@@ -1186,18 +1215,32 @@
                     
                     mensagemErro += "\n>>> " + "=".repeat(74);
                     
+                    const mensagemErroNormalizada = normalizarConteudo(mensagemErro);
+                    const conteudoAtualNormalizado = normalizarConteudo(logsEl.textContent);
+                    
                     // Só atualiza se o conteúdo mudou (evita piscar)
-                    if (logsEl.textContent !== mensagemErro) {
-                        logsEl.textContent = mensagemErro;
+                    if (mensagemErroNormalizada !== conteudoAtualNormalizado && mensagemErroNormalizada !== ultimoConteudoLogs) {
+                        requestAnimationFrame(() => {
+                            logsEl.classList.remove("loading");
+                            logsEl.classList.add("error");
+                            logsEl.textContent = mensagemErro;
+                            ultimoConteudoLogs = mensagemErroNormalizada;
+                        });
                     }
                 }
                 
                 if (terminalEl) {
-                    terminalEl.classList.remove("loading");
-                    terminalEl.classList.add("error");
                     const msgErroTerminal = "> ERRO: Falha ao carregar dados de movimentações.";
-                    if (terminalEl.textContent !== msgErroTerminal) {
-                        terminalEl.textContent = msgErroTerminal;
+                    const msgErroTerminalNormalizada = normalizarConteudo(msgErroTerminal);
+                    const conteudoAtualTerminalNormalizado = normalizarConteudo(terminalEl.textContent);
+                    
+                    if (msgErroTerminalNormalizada !== conteudoAtualTerminalNormalizado && msgErroTerminalNormalizada !== ultimoConteudoTerminal) {
+                        requestAnimationFrame(() => {
+                            terminalEl.classList.remove("loading");
+                            terminalEl.classList.add("error");
+                            terminalEl.textContent = msgErroTerminal;
+                            ultimoConteudoTerminal = msgErroTerminalNormalizada;
+                        });
                     }
                 }
                 
