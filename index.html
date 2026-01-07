@@ -72,7 +72,14 @@
         #card-logs {
             top: 5px;
             left: 5px;
-            width: calc(100% - 10px);
+            width: calc(50% - 7px);
+            height: calc(50% - 7px);
+        }
+
+        #card-terminal {
+            top: 5px;
+            left: calc(50% + 3px);
+            width: calc(50% - 8px);
             height: calc(50% - 7px);
         }
 
@@ -171,6 +178,38 @@
             border: 1px solid #000000;
         }
 
+        #terminal,
+        .terminal-output {
+            background: #000000;
+            padding: 15px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            flex: 1;
+            overflow-y: auto;
+            color: #00ff00;
+            margin: 0;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+
+        #terminal::-webkit-scrollbar,
+        .terminal-output::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        #terminal::-webkit-scrollbar-track,
+        .terminal-output::-webkit-scrollbar-track {
+            background: #000000;
+        }
+
+        #terminal::-webkit-scrollbar-thumb,
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border: 1px solid #000000;
+        }
+
         .loading {
             color: #00ff00;
             animation: blink 1s infinite;
@@ -264,6 +303,21 @@
             </div>
             <div class="card-content">
                 <pre id="logs" class="loading">Inicializando sistema... Aguarde...</pre>
+            </div>
+        </div>
+
+        <!-- Card Terminal -->
+        <div id="card-terminal" class="card">
+            <div class="card-header">
+                <span>[2] TERMINAL DE COMANDO</span>
+                <span style="font-size: 11px; color: #003300;">[ARRASTE PARA MOVER]</span>
+            </div>
+            <div class="card-content">
+                <pre id="terminal" class="terminal-output">> TERMINAL PRONTO
+> Aguardando comandos...
+> Sistema operacional...
+> 
+> _</pre>
             </div>
         </div>
 
@@ -664,7 +718,7 @@
                     logsElement.innerHTML = formatarLogsHTML(data);
                 } else {
                     logsElement.classList.add("empty");
-                    logsElement.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado neste periodo.</span>\n<span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span>\n<span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
+                    logsElement.innerHTML = '<span style="color: #ffaa00;">>>> SISTEMA: Nenhum evento registrado 10 minutos atrás.</span>\n<span style="color: #00aaff;">>>> STATUS: Aguardando novos eventos...</span>\n<span style="color: #00ff00;">>>> Pressione [F5] para atualizar.</span>';
                 }
             } catch (err) {
                 logsElement.classList.remove("loading");
