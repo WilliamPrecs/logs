@@ -1193,123 +1193,134 @@
                 return '> Nenhuma operação de discador registrada';
             }
             
-            // Estatísticas gerais
-            let totalInseridos = 0;
-            let totalProcessados = 0;
-            let tribunaisProcessados = new Set();
-            let orcamentosProcessados = new Set();
+            // Procurar pelo último corpo de requisição completo
+            let corpoRequisicao = null;
+            let dadosCorpo = {};
+            let ultimaHora = null;
             
-            // Dados do último evento completo
-            let ultimoTribunal = null;
-            let ultimaData = null;
-            let ultimoOrcamento = null;
-            let statusOperacao = null;
-            let ultimoIdNegocio = null;
-            
-            // Processar todos os logs para estatísticas
-            for (let i = 0; i < logsDiscador.length; i++) {
-                const log = logsDiscador[i];
-                const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
-                
-                if (msg.includes('DADOS INSERIDOS NO BANCO COM SUCESSO')) {
-                    totalInseridos++;
-                }
-                
-                if (msg.includes('ID_NEGOCIO ENCONTRADO')) {
-                    totalProcessados++;
-                }
-                
-                if (msg.includes('tribunal:')) {
-                    const tribunal = msg.split(':')[1]?.trim();
-                    if (tribunal) {
-                        tribunaisProcessados.add(tribunal);
-                    }
-                }
-                
-                if (msg.includes('ORÇAMENTO CONVERTIDO:')) {
-                    const orcamento = msg.split(':')[1]?.trim();
-                    if (orcamento) {
-                        orcamentosProcessados.add(orcamento);
-                    }
-                }
-            }
-            
-            // Processar do mais recente para o mais antigo para pegar o último evento completo
+            // Processar do mais recente para o mais antigo para encontrar o último corpo de requisição
             for (let i = logsDiscador.length - 1; i >= 0; i--) {
                 const log = logsDiscador[i];
-                const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
+                const msg = log.mensagem.trim();
                 
-                // Procurar pelo último evento completo (que termina com "DADOS INSERIDOS NO BANCO COM SUCESSO")
-                if (msg.includes('DADOS INSERIDOS NO BANCO COM SUCESSO')) {
-                    statusOperacao = 'Sucesso';
-                    // Quando encontrar sucesso, pegar os dados anteriores desse evento
-                    for (let j = i; j >= Math.max(0, i - 15); j--) {
-                        const logAnterior = logsDiscador[j];
-                        const msgAnterior = logAnterior.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
-                        
-                        if (msgAnterior.includes('tribunal:')) {
-                            ultimoTribunal = msgAnterior.split(':')[1]?.trim() || null;
-                        } else if (msgAnterior.includes('DATA CONVERTIDA:')) {
-                            ultimaData = msgAnterior.split(':').slice(1).join(':').trim() || null;
-                        } else if (msgAnterior.includes('ORÇAMENTO CONVERTIDO:')) {
-                            ultimoOrcamento = msgAnterior.split(':')[1]?.trim() || null;
-                        } else if (msgAnterior.includes('ID_NEGOCIO ENCONTRADO')) {
-                            // Tentar extrair ID do negócio
-                            const match = msgAnterior.match(/ID_NEGOCIO[:\s]+(\d+)/i);
+                // Procurar por "BODY:", "REQUEST BODY:", "Corpo da requisição:", ou JSON
+                if (msg.includes('BODY:') || msg.includes('REQUEST BODY:') || msg.includes('Corpo da requisição:') || 
+                    (msg.startsWith('{') && msg.includes('"id_negocio"') || msg.includes('"tribunal"'))) {
+                    
+                    // Tentar extrair JSON do corpo
+                    try {
+                        // Se a mensagem contém JSON, tentar parsear
+                        let jsonStr = msg;
+                        if (msg.includes('BODY:') || msg.includes('REQUEST BODY:') || msg.includes('Corpo da requisição:')) {
+                            const match = msg.match(/\{[\s\S]*\}/);
                             if (match) {
-                                ultimoIdNegocio = match[1];
+                                jsonStr = match[0];
                             }
                         }
+                        
+                        const corpo = JSON.parse(jsonStr);
+                        dadosCorpo = corpo;
+                        ultimaHora = ajustarHorario(log.data);
+                        break;
+                    } catch (e) {
+                        // Se não conseguir parsear JSON, tentar extrair campos manualmente
+                        if (msg.includes('id_negocio')) {
+                            const match = msg.match(/id_negocio["\s:]+(\d+)/i);
+                            if (match) dadosCorpo.id_negocio = match[1];
+                        }
+                        if (msg.includes('tribunal')) {
+                            const match = msg.match(/tribunal["\s:]+([^,}\s]+)/i);
+                            if (match) dadosCorpo.tribunal = match[1];
+                        }
+                        if (msg.includes('data')) {
+                            const match = msg.match(/data["\s:]+([^,}\s]+)/i);
+                            if (match) dadosCorpo.data = match[1];
+                        }
+                        if (msg.includes('orcamento') || msg.includes('orçamento')) {
+                            const match = msg.match(/(?:orcamento|orçamento)["\s:]+([^,}\s]+)/i);
+                            if (match) dadosCorpo.orcamento = match[1];
+                        }
+                        if (msg.includes('proprietario') || msg.includes('proprietário')) {
+                            const match = msg.match(/(?:proprietario|proprietário)["\s:]+([^,}\s"]+)/i);
+                            if (match) dadosCorpo.proprietario = match[1];
+                        }
+                        if (msg.includes('organizacao') || msg.includes('organização')) {
+                            const match = msg.match(/(?:organizacao|organização)["\s:]+([^,}\s"]+)/i);
+                            if (match) dadosCorpo.organizacao = match[1];
+                        }
+                        if (msg.includes('etapa') || msg.includes('id_etapa')) {
+                            const match = msg.match(/(?:etapa|id_etapa)["\s:]+([^,}\s"]+)/i);
+                            if (match) dadosCorpo.etapa = match[1];
+                        }
+                        ultimaHora = ajustarHorario(log.data);
+                        break;
                     }
-                    break; // Pegou o último evento completo, pode parar
                 }
             }
             
-            // Construir resumo
+            // Se não encontrou corpo de requisição, tentar extrair dos logs processados
+            if (Object.keys(dadosCorpo).length === 0) {
+                for (let i = logsDiscador.length - 1; i >= 0; i--) {
+                    const log = logsDiscador[i];
+                    const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim();
+                    
+                    if (msg.includes('tribunal:')) {
+                        dadosCorpo.tribunal = msg.split(':')[1]?.trim() || null;
+                    } else if (msg.includes('DATA CONVERTIDA:')) {
+                        dadosCorpo.data = msg.split(':').slice(1).join(':').trim() || null;
+                    } else if (msg.includes('ORÇAMENTO CONVERTIDO:')) {
+                        dadosCorpo.orcamento = msg.split(':')[1]?.trim() || null;
+                    } else if (msg.includes('ID_NEGOCIO ENCONTRADO')) {
+                        const match = msg.match(/ID_NEGOCIO[:\s]+(\d+)/i);
+                        if (match) dadosCorpo.id_negocio = match[1];
+                    }
+                    
+                    if (Object.keys(dadosCorpo).length > 0 && !ultimaHora) {
+                        ultimaHora = ajustarHorario(log.data);
+                    }
+                }
+            }
+            
+            // Construir resumo do corpo da requisição
             let resumo = [];
             resumo.push('> ========================================');
-            resumo.push('> RESUMO DE DISCADOR');
+            resumo.push('> RESUMO DO CORPO DA REQUISIÇÃO');
             resumo.push('> ========================================');
             
-            if (statusOperacao) {
-                resumo.push(`> STATUS: ${statusOperacao}`);
+            if (dadosCorpo.id_negocio) {
+                resumo.push(`> ID NEGÓCIO: ${dadosCorpo.id_negocio}`);
             }
             
-            resumo.push(`> TOTAL DE LOGS: ${logsDiscador.length}`);
-            resumo.push(`> REGISTROS PROCESSADOS: ${totalProcessados}`);
-            resumo.push(`> REGISTROS INSERIDOS: ${totalInseridos}`);
-            
-            if (tribunaisProcessados.size > 0) {
-                resumo.push(`> TRIBUNAIS PROCESSADOS: ${tribunaisProcessados.size}`);
+            if (dadosCorpo.proprietario) {
+                resumo.push(`> PROPRIETÁRIO: ${dadosCorpo.proprietario}`);
             }
             
-            if (orcamentosProcessados.size > 0) {
-                resumo.push(`> ORÇAMENTOS PROCESSADOS: ${orcamentosProcessados.size}`);
+            if (dadosCorpo.data) {
+                resumo.push(`> DATA: ${dadosCorpo.data}`);
             }
             
-            resumo.push('');
-            resumo.push('> ÚLTIMO EVENTO:');
-            
-            if (ultimoIdNegocio) {
-                resumo.push(`> ID NEGÓCIO: ${ultimoIdNegocio}`);
+            if (dadosCorpo.etapa) {
+                resumo.push(`> ETAPA: ${dadosCorpo.etapa}`);
             }
             
-            if (ultimoTribunal) {
-                resumo.push(`> TRIBUNAL: ${ultimoTribunal}`);
+            if (dadosCorpo.orcamento) {
+                resumo.push(`> ORÇAMENTO: ${dadosCorpo.orcamento}`);
             }
             
-            if (ultimaData) {
-                resumo.push(`> DATA: ${ultimaData}`);
+            if (dadosCorpo.organizacao) {
+                resumo.push(`> ORGANIZAÇÃO: ${dadosCorpo.organizacao}`);
             }
             
-            if (ultimoOrcamento) {
-                resumo.push(`> ORÇAMENTO: ${ultimoOrcamento}`);
+            if (dadosCorpo.tribunal) {
+                resumo.push(`> TRIBUNAL: ${dadosCorpo.tribunal}`);
             }
             
-            if (logsDiscador.length > 0) {
-                const ultimoLog = logsDiscador[logsDiscador.length - 1];
-                const horaAjustada = ajustarHorario(ultimoLog.data);
-                resumo.push(`> ÚLTIMA ATUALIZAÇÃO: ${horaAjustada}`);
+            if (ultimaHora) {
+                resumo.push(`> HORA DA REQUISIÇÃO: ${ultimaHora}`);
+            }
+            
+            if (Object.keys(dadosCorpo).length === 0) {
+                resumo.push('> Nenhum dado do corpo da requisição encontrado');
             }
             
             resumo.push('> ========================================');
