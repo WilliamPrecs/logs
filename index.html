@@ -253,7 +253,7 @@
         <!-- Card de Logs -->
         <div id="card-logs" class="card">
             <div class="card-header">
-                <span>📋 [1] LOGS DO SISTEMA</span>
+                <span>[1] LOGS DO SISTEMA</span>
                 <span style="font-size: 11px; color: #003300;">[ARRASTE PARA MOVER]</span>
             </div>
             <div class="card-content">
@@ -264,8 +264,8 @@
         <!-- Card Dashboard Mensal -->
         <div id="card-mensal" class="card">
             <div class="card-header">
-                <span>📊 [2] DASHBOARD METAS DIÁRIAS</span>
-                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/mensalPowerBI/')">[⛶ TELA CHEIA]</button>
+                <span>[2] DASHBOARD METAS DIÁRIAS</span>
+                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/mensalPowerBI/')">[TELA CHEIA]</button>
             </div>
             <div class="card-content">
                 <iframe src="https://williamprecs.github.io/mensalPowerBI/" frameborder="0" class="dashboard-iframe"></iframe>
@@ -275,8 +275,8 @@
         <!-- Card Dashboard Comercial -->
         <div id="card-comercial" class="card">
             <div class="card-header">
-                <span>📈 [3] DASHBOARD METAS MENSAIS</span>
-                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/comercialPrecsPowerBI/')">[⛶ TELA CHEIA]</button>
+                <span>[3] DASHBOARD METAS MENSAIS</span>
+                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/comercialPrecsPowerBI/')">[TELA CHEIA]</button>
             </div>
             <div class="card-content">
                 <iframe src="https://williamprecs.github.io/comercialPrecsPowerBI/" frameborder="0" class="dashboard-iframe"></iframe>
@@ -448,33 +448,33 @@
 
             eventosRecentes.forEach((evento, idx) => {
                 html += `\n<div style="margin-bottom: 15px;">`;
-                html += `<div style="color: #00ffff; font-weight: bold; font-size: 16px;">📥 WEBHOOK #${eventos.length - eventosRecentes.length + idx + 1} - ${evento.data}</div>`;
+                html += `<div style="color: #00ffff; font-weight: bold; font-size: 16px;">>> WEBHOOK #${eventos.length - eventosRecentes.length + idx + 1} - ${evento.data}</div>`;
                 html += `<div style="color: #00aa00; margin: 5px 0;">${"─".repeat(70)}</div>`;
 
                 evento.linhas.forEach(linha => {
                     if (linha.startsWith("ID NEGÓCIO:")) {
                         const valor = linha.split(':')[1].trim();
-                        html += `<div style="color: #ffff00; font-weight: bold;">  🔹 ID NEGÓCIO: <span style="color: #ffffff; font-size: 17px;">${valor}</span></div>`;
+                        html += `<div style="color: #ffff00; font-weight: bold;">  > ID NEGÓCIO: <span style="color: #ffffff; font-size: 17px;">${valor}</span></div>`;
                     } else if (linha.startsWith("PROPRIETÁRIO:")) {
                         const valor = linha.split(':').slice(1).join(':').trim();
-                        html += `<div style="color: #00ffaa;">  👤 PROPRIETÁRIO: <span style="color: #ffffff;">${valor}</span></div>`;
+                        html += `<div style="color: #00ffaa;">  > PROPRIETÁRIO: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.startsWith("ORGANIZAÇÃO:")) {
                         const valor = linha.split(':').slice(1).join(':').trim();
-                        html += `<div style="color: #00ffaa;">  🏢 ORGANIZAÇÃO: <span style="color: #ffffff;">${valor}</span></div>`;
+                        html += `<div style="color: #00ffaa;">  > ORGANIZAÇÃO: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.startsWith("TRIBUNAL:")) {
                         const valor = linha.split(':')[1].trim();
-                        html += `<div style="color: #00ffaa;">  ⚖️  TRIBUNAL: <span style="color: #ffffff;">${valor}</span></div>`;
+                        html += `<div style="color: #00ffaa;">  > TRIBUNAL: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.startsWith("ID ETAPA:")) {
                         const valor = linha.split(':').slice(1).join(':').trim();
-                        html += `<div style="color: #aaaaff;">  📊 ETAPA: <span style="color: #ffffff;">${valor}</span></div>`;
+                        html += `<div style="color: #aaaaff;">  > ETAPA: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.startsWith("ORÇAMENTO:")) {
                         const valor = linha.split(':')[1].trim();
-                        html += `<div style="color: #ffaa00;">  💰 ORÇAMENTO: <span style="color: #ffffff; font-weight: bold;">${valor}</span></div>`;
+                        html += `<div style="color: #ffaa00;">  > ORÇAMENTO: <span style="color: #ffffff; font-weight: bold;">${valor}</span></div>`;
                     } else if (linha.startsWith("DATA:")) {
                         const valor = linha.split(':').slice(1).join(':').trim();
-                        html += `<div style="color: #aaaaaa;">  📅 DATA: <span style="color: #ffffff;">${valor}</span></div>`;
+                        html += `<div style="color: #aaaaaa;">  > DATA: <span style="color: #ffffff;">${valor}</span></div>`;
                     } else if (linha.includes("SUCESSO")) {
-                        html += `<div style="color: #00ff00; font-weight: bold; margin-top: 5px;">  ✅ ${linha}</div>`;
+                        html += `<div style="color: #00ff00; font-weight: bold; margin-top: 5px;">  >>> ${linha}</div>`;
                     }
                 });
 
