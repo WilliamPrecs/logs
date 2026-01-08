@@ -1123,8 +1123,9 @@
                 return '> Nenhuma operação de discador registrada';
             }
             
-            // Procurar pelos ÚLTIMOS 10 logs (fixo)
+            // Procurar pelos ÚLTIMOS 10 logs (fixo) - sem duplicatas
             let ultimosLogs = [];
+            let logsVistos = new Set(); // Para rastrear duplicatas
             
             for (let i = logsDiscador.length - 1; i >= 0 && ultimosLogs.length < 10; i--) {
                 const log = logsDiscador[i];
@@ -1143,10 +1144,19 @@
                         
                         // Tentar parsear
                         const dadosDiscador = JSON.parse(jsonStr);
-                        ultimosLogs.unshift({
-                            dados: dadosDiscador,
-                            hora: ajustarHorario(log.data)
-                        });
+                        const hora = ajustarHorario(log.data);
+                        
+                        // Criar chave única para detectar duplicatas
+                        const chaveUnica = `${hora}_${dadosDiscador.numero}_${dadosDiscador.campanha}_${dadosDiscador.status}`;
+                        
+                        // Verificar se já foi adicionado
+                        if (!logsVistos.has(chaveUnica)) {
+                            logsVistos.add(chaveUnica);
+                            ultimosLogs.unshift({
+                                dados: dadosDiscador,
+                                hora: hora
+                            });
+                        }
                     } catch (e) {
                         // Se falhar, tentar limpar caracteres problemáticos
                         try {
@@ -1160,10 +1170,19 @@
                                 });
                             
                             const dadosDiscador = JSON.parse(jsonStr2);
-                            ultimosLogs.unshift({
-                                dados: dadosDiscador,
-                                hora: ajustarHorario(log.data)
-                            });
+                            const hora = ajustarHorario(log.data);
+                            
+                            // Criar chave única para detectar duplicatas
+                            const chaveUnica = `${hora}_${dadosDiscador.numero}_${dadosDiscador.campanha}_${dadosDiscador.status}`;
+                            
+                            // Verificar se já foi adicionado
+                            if (!logsVistos.has(chaveUnica)) {
+                                logsVistos.add(chaveUnica);
+                                ultimosLogs.unshift({
+                                    dados: dadosDiscador,
+                                    hora: hora
+                                });
+                            }
                         } catch (e2) {
                             // Continuar procurando
                             continue;
@@ -1610,28 +1629,56 @@
         // Carregar logs ao carregar a página
         carregarLogs();
 
-        // Auto-refresh a cada 10 segundos para mais fluidez
-        let autoRefreshInterval;
-        let countdown = 10;
+        // Auto-refresh com intervalo aleatório entre 20-60 segundos
+        let autoRefreshTimeout;
+        let countdownInterval;
+        let countdown = 20;
+        let proximoRefresh = 20;
+        
+        function getRandomInterval() {
+            // Retorna um valor aleatório entre 20 e 60 segundos (em ms)
+            return (Math.floor(Math.random() * (60 - 20 + 1)) + 20) * 1000;
+        }
+        
+        function agendarProximoRefresh() {
+            // Limpa timeout anterior se existir
+            if (autoRefreshTimeout) {
+                clearTimeout(autoRefreshTimeout);
+            }
+            
+            // Gera intervalo aleatório
+            const intervalo = getRandomInterval();
+            proximoRefresh = Math.floor(intervalo / 1000);
+            countdown = proximoRefresh;
+            
+            // Agenda próximo refresh
+            autoRefreshTimeout = setTimeout(() => {
+                carregarLogs();
+                agendarProximoRefresh(); // Agenda o próximo
+            }, intervalo);
+        }
         
         function iniciarAutoRefresh() {
-            // Limpa intervalo anterior se existir
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
+            // Limpa intervalos anteriores se existirem
+            if (autoRefreshTimeout) {
+                clearTimeout(autoRefreshTimeout);
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
             }
             
             // Atualiza imediatamente
             carregarLogs();
             
-            // Configura novo intervalo
-            autoRefreshInterval = setInterval(() => {
-                carregarLogs();
-            }, 10000); // 10 segundos
+            // Agenda próximo refresh com intervalo aleatório
+            agendarProximoRefresh();
 
-            // Atualiza contador visual
-            setInterval(() => {
+            // Atualiza contador visual a cada segundo
+            countdownInterval = setInterval(() => {
                 countdown--;
-                if (countdown <= 0) countdown = 10;
+                if (countdown <= 0) {
+                    countdown = proximoRefresh;
+                }
                 document.getElementById('autoRefreshStatus').textContent = `[↻ ${countdown}s]`;
             }, 1000);
         }
