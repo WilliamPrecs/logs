@@ -1137,17 +1137,47 @@
                 }
             }
             
+            // Determinar status geral do sistema
+            let statusGeral = 'PROCESSANDO';
+            let indicador = '[...]';
+            
+            if (statusOperacao === 'Operação cancelada' || statusOperacao === 'Validação falhou') {
+                statusGeral = 'ERRO';
+                indicador = '[X]';
+            } else if (statusOperacao === 'Download concluído' && totalRegistros && !municipiosFaltando.length) {
+                statusGeral = 'OK';
+                indicador = '[OK]';
+            } else if (municipiosFaltando.length > 0) {
+                statusGeral = 'ALERTA';
+                indicador = '[!]';
+            } else if (!statusOperacao && logsMovimentacoes.length === 1) {
+                statusGeral = 'AGUARDANDO';
+                indicador = '[~]';
+            }
+            
             // Construir resumo
             resumo.push('> ========================================');
-            resumo.push('> RESUMO DE MOVIMENTAÇÕES');
+            resumo.push(`> SALDO EM CONTA: ${indicador} ${statusGeral}`);
             resumo.push('> ========================================');
             
+            // Mostrar mensagem de status clara
+            if (statusGeral === 'OK') {
+                resumo.push('> SITUACAO: Sistema funcionando normalmente');
+            } else if (statusGeral === 'ERRO') {
+                resumo.push('> SITUACAO: Operacao cancelada ou com erro');
+            } else if (statusGeral === 'ALERTA') {
+                resumo.push('> SITUACAO: Inconsistencias detectadas');
+            } else if (statusGeral === 'AGUARDANDO') {
+                resumo.push('> SITUACAO: Aguardando proxima sincronizacao');
+            } else {
+                resumo.push('> SITUACAO: Processamento em andamento');
+            }
+            
+            resumo.push('');
             resumo.push(`> TOTAL DE LOGS: ${logsMovimentacoes.length}`);
             
             if (statusOperacao) {
-                resumo.push(`> STATUS: ${statusOperacao}`);
-            } else {
-                resumo.push(`> STATUS: Processando`);
+                resumo.push(`> ULTIMA OPERACAO: ${statusOperacao}`);
             }
             
             if (tabelaUsada) {
@@ -1159,38 +1189,40 @@
             }
             
             if (municipiosBanco) {
-                resumo.push(`> MUNICÍPIOS NO BANCO: ${municipiosBanco}`);
+                resumo.push(`> MUNICIPIOS NO BANCO: ${municipiosBanco}`);
             }
             
             if (municipiosArquivo) {
-                resumo.push(`> MUNICÍPIOS NO ARQUIVO: ${municipiosArquivo}`);
+                resumo.push(`> MUNICIPIOS NO ARQUIVO: ${municipiosArquivo}`);
             }
             
             if (municipiosBanco && municipiosArquivo) {
                 const diferenca = parseInt(municipiosBanco) - parseInt(municipiosArquivo);
                 if (diferenca > 0) {
-                    resumo.push(`> DIFERENÇA: ${diferenca} município(s) a mais no banco`);
+                    resumo.push(`> DIFERENCA: ${diferenca} municipio(s) a mais no banco`);
                 } else if (diferenca < 0) {
-                    resumo.push(`> DIFERENÇA: ${Math.abs(diferenca)} município(s) a mais no arquivo`);
+                    resumo.push(`> DIFERENCA: ${Math.abs(diferenca)} municipio(s) a mais no arquivo`);
                 } else {
-                    resumo.push(`> DIFERENÇA: 0 (banco e arquivo sincronizados)`);
+                    resumo.push(`> DIFERENCA: 0 (sincronizado)`);
                 }
             }
             
             if (municipiosFaltando.length > 0) {
-                resumo.push(`> MUNICÍPIOS FALTANDO NO ARQUIVO: ${municipiosFaltando.length}`);
-                municipiosFaltando.slice(0, 5).forEach(mun => {
+                resumo.push('');
+                resumo.push(`> MUNICIPIOS FALTANDO: ${municipiosFaltando.length}`);
+                municipiosFaltando.slice(0, 3).forEach(mun => {
                     resumo.push(`>   - ${mun}`);
                 });
-                if (municipiosFaltando.length > 5) {
-                    resumo.push(`>   ... e mais ${municipiosFaltando.length - 5} município(s)`);
+                if (municipiosFaltando.length > 3) {
+                    resumo.push(`>   ... e mais ${municipiosFaltando.length - 3}`);
                 }
             }
             
             if (logsMovimentacoes.length > 0) {
+                resumo.push('');
                 const ultimoLog = logsMovimentacoes[logsMovimentacoes.length - 1];
                 const horaAjustada = ajustarHorario(ultimoLog.data);
-                resumo.push(`> ÚLTIMA ATUALIZAÇÃO: ${horaAjustada}`);
+                resumo.push(`> ULTIMA ATUALIZACAO: ${horaAjustada}`);
             }
             
             resumo.push('> ========================================');
