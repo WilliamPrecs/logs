@@ -13,9 +13,9 @@
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            background: #0a0a0a;
-            color: #FFD700;
+            font-family: 'Courier New', monospace;
+            background: #000000;
+            color: #00ff00;
             height: 100vh;
             width: 100vw;
             margin: 0;
@@ -33,34 +33,25 @@
         }
 
         h3 {
-            color: #FFD700;
-            font-size: 22px;
-            font-weight: 600;
-            padding: 18px 25px;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #00ff00;
+            font-size: 14px;
+            font-weight: 400;
+            padding: 10px 15px;
+            border-bottom: 1px solid #00ff00;
+            background: #000000;
             text-transform: uppercase;
-            letter-spacing: 4px;
+            letter-spacing: 2px;
             margin: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
 
-        h3::before {
-            content: '';
-        }
 
         .card {
             position: absolute;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(255, 215, 0, 0.15);
-            background: #0f0f0f;
+            border: 1px solid #00ff00;
+            background: #000000;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-            resize: both;
-            min-width: 300px;
-            min-height: 200px;
-            border-radius: 2px;
         }
 
 
@@ -68,68 +59,38 @@
             top: 5px;
             left: 5px;
             width: calc(33.33% - 7px);
-            height: calc(50% - 7px);
+            height: calc(100% - 10px);
         }
 
         #card-terminal {
             top: 5px;
             left: calc(33.33% + 3px);
             width: calc(33.33% - 7px);
-            height: calc(50% - 7px);
+            height: calc(100% - 10px);
         }
 
         #card-terminal2 {
             top: 5px;
             left: calc(66.66% + 3px);
             width: calc(33.33% - 8px);
-            height: calc(50% - 7px);
+            height: calc(100% - 10px);
         }
 
-        .dashboard-iframe-livre {
-            position: absolute;
-            border: none;
-            background: #000000;
-        }
-
-        #dashboard-mensal {
-            top: calc(50% + 3px);
-            left: 5px;
-            width: calc(50% - 7px);
-            height: calc(50% - 8px);
-        }
-
-        #dashboard-comercial {
-            top: calc(50% + 3px);
-            left: calc(50% + 3px);
-            width: calc(50% - 8px);
-            height: calc(50% - 8px);
-        }
 
         .card-header {
-            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-            color: #FFD700;
-            padding: 12px 20px;
-            font-size: 13px;
-            font-weight: 500;
-            letter-spacing: 2px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-            cursor: move;
-            user-select: none;
-            transition: all 0.3s ease;
-        }
-
-        .card-header:hover {
-            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-            border-bottom-color: rgba(255, 215, 0, 0.4);
+            background: #000000;
+            color: #00ff00;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #00ff00;
         }
 
         .card-content {
             flex: 1;
             overflow: auto;
-            background: #0f0f0f;
+            background: #000000;
         }
 
         .btn-fullscreen {
@@ -163,16 +124,14 @@
         #logs {
             background: #000000;
             padding: 15px;
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px !important;
             line-height: 1.5;
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
             color: #00ff00;
             margin: 0;
-            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
-            scroll-behavior: smooth;
             white-space: pre-wrap;
             word-wrap: break-word;
             /* Esconder barra padrão */
@@ -284,87 +243,46 @@
         #terminal,
         #terminal2,
         .terminal-output {
-            background: #0f0f0f;
-            padding: 20px;
-            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-            font-size: 13px;
-            line-height: 1.7;
+            background: #000000;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px !important;
+            line-height: 1.5;
             white-space: pre-wrap;
             word-wrap: break-word;
             flex: 1;
-            overflow-y: scroll;
+            overflow-y: auto;
             overflow-x: hidden;
-            color: #D4AF37;
+            color: #00ff00;
             margin: 0;
-            scroll-behavior: smooth;
-            scrollbar-width: thin;
-            scrollbar-color: #00ff00 #000000;
-            padding-right: 20px;
-            /* Otimizações para evitar piscar */
-            will-change: contents;
-            transform: translateZ(0);
-            backface-visibility: hidden;
-            -webkit-font-smoothing: antialiased;
         }
 
         /* Barra de rolagem estilizada para terminal - Webkit */
         #terminal::-webkit-scrollbar,
         #terminal2::-webkit-scrollbar,
         .terminal-output::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-            background-color: #0a0a0a;
+            width: 6px;
         }
 
-        #terminal::-webkit-scrollbar-track,
-        #terminal2::-webkit-scrollbar-track,
         .terminal-output::-webkit-scrollbar-track {
-            background: #0a0a0a;
+            background: #000000;
         }
 
-        #terminal::-webkit-scrollbar-thumb,
-        #terminal2::-webkit-scrollbar-thumb,
         .terminal-output::-webkit-scrollbar-thumb {
-            background: rgba(212, 175, 55, 0.3);
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        #terminal::-webkit-scrollbar-thumb:hover,
-        #terminal2::-webkit-scrollbar-thumb:hover,
-        .terminal-output::-webkit-scrollbar-thumb:hover {
-            background: rgba(212, 175, 55, 0.5);
-        }
-
-        #terminal::-webkit-scrollbar-thumb:active,
-        #terminal2::-webkit-scrollbar-thumb:active,
-        .terminal-output::-webkit-scrollbar-thumb:active {
-            background: rgba(212, 175, 55, 0.7);
-        }
-
-        #terminal::-webkit-scrollbar-corner,
-        #terminal2::-webkit-scrollbar-corner,
-        .terminal-output::-webkit-scrollbar-corner {
-            background: #0a0a0a;
+            background: #00ff00;
         }
 
         .loading {
-            color: #D4AF37 !important;
+            color: #00ff00;
             animation: blink 1s infinite;
         }
 
         .error {
-            color: #ff6b6b;
-            font-weight: 500;
+            color: #ff0000;
         }
 
         .empty {
-            color: #D4AF37 !important;
-        }
-        
-        /* Garantir que ambos os terminais tenham a mesma cor */
-        #logs, #terminal, .terminal-output {
-            color: #D4AF37 !important;
+            color: #00ff00;
         }
 
         .refresh-btn {
@@ -400,24 +318,16 @@
             cursor: not-allowed;
         }
 
-        .dashboard-iframe {
-            width: 100%;
-            height: 100%;
-            flex: 1;
-            border: none;
-            background: #000000;
-            min-height: 0;
-            display: block;
-        }
 
         @keyframes blink {
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0.3; }
         }
 
-        /* Efeito de scan line do terminal */
+        /* Removido efeito visual */
         body::after {
             content: '';
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -437,7 +347,11 @@
     </style>
 </head>
 <body>
-    <h3>SISTEMA DE MONITORAMENTO <span id="autoRefreshStatus" style="font-size: 12px; float: right; color: rgba(212, 175, 55, 0.7); font-weight: 400;">↻ 45s</span></h3>
+    <h3>
+        TERMINAIS DE MONITORAMENTO 
+        <a href="dashboards.html" style="float: right; margin-right: 20px; color: #D4AF37; text-decoration: none; font-size: 12px; border: 1px solid rgba(212, 175, 55, 0.3); padding: 4px 12px; border-radius: 3px; font-weight: 400;">📊 DASHBOARDS</a>
+        <span id="autoRefreshStatus" style="font-size: 12px; float: right; color: rgba(212, 175, 55, 0.7); font-weight: 400;">↻ 10s</span>
+    </h3>
 
     <div class="container">
         <!-- Card de Logs -->
@@ -477,12 +391,6 @@
 > _</pre>
             </div>
         </div>
-
-        <!-- Dashboard Mensal -->
-        <iframe id="dashboard-mensal" src="https://williamprecs.github.io/mensalPowerBI/" frameborder="0" class="dashboard-iframe-livre"></iframe>
-
-        <!-- Dashboard Comercial -->
-        <iframe id="dashboard-comercial" src="https://williamprecs.github.io/comercialPrecsPowerBI/" frameborder="0" class="dashboard-iframe-livre"></iframe>
     </div>
 
     <script>
@@ -954,6 +862,7 @@
             // Processar logs para extrair eventos de webhook
             for (let i = 0; i < data.length; i++) {
                 const log = data[i];
+                if (!log || !log.mensagem) continue; // Segurança
                 const msg = log.mensagem.trim();
                 
                 if (msg === "==================================================") {
@@ -985,14 +894,10 @@
                 eventos.push(eventoAtual);
             }
             
-            // Pegar apenas o último evento
+            // Pegar os últimos 3 eventos (ou todos se houver menos)
             if (eventos.length === 0) {
                 return '> Nenhum evento de negócio registrado';
             }
-            
-            const ultimoEvento = eventos[eventos.length - 1];
-            let resumo = [];
-            let dataExtraida = null;
             
             // Função auxiliar para limpar valor
             const limparValor = (valor) => {
@@ -1004,69 +909,92 @@
                     .trim();
             };
             
-            // Função para verificar se data tem horário completo
-            const temHorarioCompleto = (dataStr) => {
-                // Verifica se tem formato "YYYY-MM-DD HH:MM" ou "YYYY-MM-DD HH:MM:SS"
-                return /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(:\d{2})?$/.test(dataStr);
+            // Função para extrair dados de um evento
+            const extrairDadosEvento = (evento) => {
+                let dados = { hora: evento.data };
+                
+                evento.linhas.forEach(linha => {
+                    if (linha.startsWith("ID NEGÓCIO:")) {
+                        dados.id = limparValor(linha.split(':')[1].trim());
+                    } else if (linha.startsWith("PROPRIETÁRIO:")) {
+                        dados.proprietario = limparValor(linha.split(':').slice(1).join(':').trim());
+                    } else if (linha.startsWith("DATA:")) {
+                        let valor = linha.split(':').slice(1).join(':').trim();
+                        const matchDataHoraCompleta = valor.match(/^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/);
+                        
+                        if (matchDataHoraCompleta) {
+                            valor = matchDataHoraCompleta[1];
+                        } else {
+                            valor = limparValor(valor);
+                            const matchDataHora = valor.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2})$/);
+                            if (matchDataHora) {
+                                valor = `${matchDataHora[1]} ${matchDataHora[2]}:00`;
+                            }
+                        }
+                        dados.data = valor;
+                    } else if (linha.startsWith("ID ETAPA:")) {
+                        dados.etapa = limparValor(linha.split(':').slice(1).join(':').trim());
+                    } else if (linha.startsWith("ORÇAMENTO:")) {
+                        dados.orcamento = limparValor(linha.split(':')[1].trim());
+                    } else if (linha.startsWith("ORGANIZAÇÃO:")) {
+                        dados.organizacao = limparValor(linha.split(':').slice(1).join(':').trim());
+                    } else if (linha.startsWith("TRIBUNAL:")) {
+                        dados.tribunal = limparValor(linha.split(':')[1].trim());
+                    }
+                });
+                
+                return dados;
             };
             
-            // Extrair apenas os campos solicitados
-            ultimoEvento.linhas.forEach(linha => {
-                if (linha.startsWith("ID NEGÓCIO:")) {
-                    let valor = linha.split(':')[1].trim();
-                    valor = limparValor(valor);
-                    resumo.push(`> ID NEGÓCIO: ${valor}`);
-                } else if (linha.startsWith("PROPRIETÁRIO:")) {
-                    let valor = linha.split(':').slice(1).join(':').trim();
-                    valor = limparValor(valor);
-                    resumo.push(`> PROPRIETÁRIO: ${valor}`);
-                } else if (linha.startsWith("DATA:")) {
-                    // Extrair valor preservando os dois pontos do horário
-                    let valor = linha.split(':').slice(1).join(':').trim();
-                    
-                    // Extrair a parte de data/hora antes de aplicar limparValor
-                    // Formato esperado: "2026-01-07 14:30 (campo: data)" ou "2026-01-07 14:30:45 (campo: data)"
-                    const matchDataHoraCompleta = valor.match(/^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2})?)/);
-                    
-                    if (matchDataHoraCompleta) {
-                        // Se encontrou data/hora completa, usar apenas essa parte
-                        valor = matchDataHoraCompleta[1];
-                    } else {
-                        // Se não encontrou formato completo, tentar extrair e limpar
-                        valor = limparValor(valor);
-                        
-                        // Verificar se tem formato "YYYY-MM-DD HH" (apenas hora, sem minutos)
-                        const matchDataHora = valor.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2})$/);
-                        if (matchDataHora) {
-                            // Completa com ":00" apenas se realmente não tiver minutos
-                            valor = `${matchDataHora[1]} ${matchDataHora[2]}:00`;
-                        }
-                    }
-                    
-                    dataExtraida = valor;
-                    resumo.push(`> DATA: ${valor}`);
-                } else if (linha.startsWith("ID ETAPA:")) {
-                    let valor = linha.split(':').slice(1).join(':').trim();
-                    valor = limparValor(valor);
-                    resumo.push(`> ETAPA: ${valor}`);
-                } else if (linha.startsWith("ORÇAMENTO:")) {
-                    let valor = linha.split(':')[1].trim();
-                    valor = limparValor(valor);
-                    resumo.push(`> ORÇAMENTO: ${valor}`);
-                } else if (linha.startsWith("ORGANIZAÇÃO:")) {
-                    let valor = linha.split(':').slice(1).join(':').trim();
-                    valor = limparValor(valor);
-                    resumo.push(`> ORGANIZAÇÃO: ${valor}`);
-                } else if (linha.startsWith("TRIBUNAL:")) {
-                    let valor = linha.split(':')[1].trim();
-                    valor = limparValor(valor);
-                    resumo.push(`> TRIBUNAL: ${valor}`);
+            // Filtrar apenas eventos que têm dados (pelo menos ID ou Proprietário)
+            const eventosComDados = eventos.filter(evento => {
+                return evento.linhas.some(linha => 
+                    linha.startsWith("ID NEGÓCIO:") || 
+                    linha.startsWith("PROPRIETÁRIO:") ||
+                    linha.includes(">>> DADOS INSERIDOS NO BANCO COM SUCESSO!")
+                );
+            });
+            
+            // Pegar os últimos 7 eventos (fixo)
+            const ultimosEventos = eventosComDados.slice(-7);
+            
+            // Construir resumo em formato compacto
+            let resumo = [];
+            resumo.push('> ─────────────────────────────────────');
+            resumo.push('> [1] METAS DIARIAS - ULTIMOS 7');
+            resumo.push('> ─────────────────────────────────────');
+            
+            // Inverter para mostrar o mais recente embaixo (como terminal real)
+            ultimosEventos.reverse().forEach((evento, index) => {
+                const d = extrairDadosEvento(evento);
+                
+                resumo.push('');
+                
+                // Linha 1: Hora | ID | Proprietário
+                const hora = d.hora ? d.hora.substring(11) : 'N/A';
+                const id = d.id || 'N/A';
+                const prop = d.proprietario || 'N/A';
+                resumo.push(`> [${hora}] ID:${id} | ${prop}`);
+                
+                // Linha 2: Data | Etapa | Orçamento
+                const dataEvento = d.data || 'N/A';
+                const etapa = d.etapa || 'N/A';
+                const orcamento = d.orcamento || 'N/A';
+                resumo.push(`> ${dataEvento} | ${etapa} | ${orcamento}`);
+                
+                // Linha 3: Organização | Tribunal
+                const org = d.organizacao || 'N/A';
+                const trib = d.tribunal || 'N/A';
+                resumo.push(`> ${org} | ${trib}`);
+                
+                // Separador entre eventos (exceto no último)
+                if (index < ultimosEventos.length - 1) {
+                    resumo.push('> ─────────');
                 }
             });
             
-            if (resumo.length === 0) {
-                return '> Nenhum dado de negócio encontrado';
-            }
+            resumo.push('');
+            resumo.push('> ─────────────────────────────────────');
             
             return resumo.join('\n');
         }
@@ -1076,126 +1004,56 @@
             if (!data || !Array.isArray(data)) return '';
             
             // Filtrar apenas logs de movimentacoesWilliam
-            const logsMovimentacoes = data.filter(log => log.origem === 'movimentacoesWilliam');
+            const logsMovimentacoes = data.filter(log => log && log.origem === 'movimentacoesWilliam');
             
             if (logsMovimentacoes.length === 0) {
                 return '> Nenhuma operação de movimentações registrada';
             }
             
-            let resumo = [];
-            let ultimaOperacao = null;
-            let municipiosBanco = null;
-            let municipiosArquivo = null;
-            let totalRegistros = null;
+            // Extrair informações-chave dos logs
+            let statusDownload = null;
             let tabelaUsada = null;
-            let municipiosFaltando = [];
-            let statusOperacao = null;
+            let totalRegistros = null;
+            let municipiosBanco = null;
+            let statusMigracao = null;
+            let registrosInseridos = null;
+            let ultimaAtualizacao = null;
             
-            // Processar TODOS os logs para coletar todas as informações disponíveis
-            for (let i = logsMovimentacoes.length - 1; i >= 0; i--) {
-                const log = logsMovimentacoes[i];
-                const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim(); // Remove emojis
+            logsMovimentacoes.forEach(log => {
+                if (!log || !log.mensagem) return; // Segurança
+                const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️💾]/g, '').trim();
                 
-                // Buscar status da operação (priorizar mais recente)
-                if (!statusOperacao) {
-                    if (msg.includes('Download concluído')) {
-                        statusOperacao = 'Download concluído';
-                    } else if (msg.includes('Conectando ao SQLite')) {
-                        statusOperacao = 'Conectado ao SQLite';
-                    } else if (msg.includes('Conectando ao PostgreSQL')) {
-                        statusOperacao = 'Conectado ao PostgreSQL';
-                    } else if (msg.includes('VALIDAÇÃO FALHOU')) {
-                        statusOperacao = 'Validação falhou';
-                    } else if (msg.includes('Operação cancelada')) {
-                        statusOperacao = 'Operação cancelada';
-                    } else if (msg.includes('Baixando arquivo')) {
-                        statusOperacao = 'Baixando arquivo do S3';
-                    }
+                if (msg.includes('Download concluído')) {
+                    statusDownload = 'Concluído';
+                }
+                if (msg.includes('Usando tabela:')) {
+                    tabelaUsada = msg.split(':')[1]?.trim();
+                }
+                if (msg.includes('Total de registros:')) {
+                    totalRegistros = msg.split(':')[1]?.trim();
+                }
+                if (msg.includes('Municípios no banco de dados:')) {
+                    municipiosBanco = msg.split(':')[1]?.trim();
+                }
+                if (msg.includes('Migração concluída')) {
+                    statusMigracao = 'Concluída';
+                }
+                if (msg.includes('Registros inseridos:')) {
+                    registrosInseridos = msg.split(':')[1]?.trim();
                 }
                 
-                // Buscar todas as outras informações (pegar qualquer ocorrência)
-                if (!tabelaUsada && msg.includes('Usando tabela:')) {
-                    tabelaUsada = msg.split(':')[1]?.trim() || null;
-                }
-                
-                if (!totalRegistros && msg.includes('Total de registros:')) {
-                    totalRegistros = msg.split(':')[1]?.trim() || null;
-                }
-                
-                if (!municipiosBanco && (msg.includes('Municípios no banco de dados:') || msg.includes('Municipios no banco de dados:'))) {
-                    municipiosBanco = msg.split(':')[1]?.trim() || null;
-                }
-                
-                if (!municipiosArquivo && (msg.includes('Municípios no arquivo:') || msg.includes('Municipios no arquivo:'))) {
-                    municipiosArquivo = msg.split(':')[1]?.trim() || null;
-                }
-                
-                // Coletar municípios faltando (durante validação falha)
-                if (msg.startsWith('- ') && (statusOperacao === 'Validação falhou' || msg.match(/^- [A-Z]/))) {
-                    const municipio = msg.replace('- ', '').trim();
-                    if (municipio && !municipiosFaltando.includes(municipio)) {
-                        municipiosFaltando.push(municipio);
-                    }
-                }
-            }
-            
-            // Determinar status geral do sistema
-            let statusGeral = 'PROCESSANDO';
-            let indicador = '[...]';
-            let semDadosCompletos = !tabelaUsada && !totalRegistros && !municipiosBanco;
-            
-            if (statusOperacao === 'Operação cancelada' || statusOperacao === 'Validação falhou') {
-                statusGeral = 'ERRO';
-                indicador = '[X]';
-            } else if (statusOperacao === 'Download concluído' && totalRegistros && !municipiosFaltando.length) {
-                statusGeral = 'OK';
-                indicador = '[OK]';
-            } else if (municipiosFaltando.length > 0) {
-                statusGeral = 'ALERTA';
-                indicador = '[!]';
-            } else if (semDadosCompletos || (statusOperacao && statusOperacao.includes('Baixando'))) {
-                statusGeral = 'AGUARDANDO';
-                indicador = '[~]';
-            }
+                ultimaAtualizacao = ajustarHorario(log.data);
+            });
             
             // Construir resumo
-            resumo.push('> ========================================');
-            resumo.push(`> SALDO EM CONTA: ${indicador} ${statusGeral}`);
-            resumo.push('> ========================================');
-            
-            // Mostrar mensagem de status clara
-            if (statusGeral === 'OK') {
-                resumo.push('> SITUACAO: Sistema funcionando normalmente');
-            } else if (statusGeral === 'ERRO') {
-                resumo.push('> SITUACAO: Operacao cancelada ou com erro');
-            } else if (statusGeral === 'ALERTA') {
-                resumo.push('> SITUACAO: Inconsistencias detectadas');
-            } else if (statusGeral === 'AGUARDANDO') {
-                resumo.push('> SITUACAO: Aguardando proxima sincronizacao');
-            } else {
-                resumo.push('> SITUACAO: Processamento em andamento');
-            }
-            
+            let resumo = [];
+            resumo.push('> ─────────────────────────────────────');
+            resumo.push('> [2] SALDO EM CONTA');
+            resumo.push('> ─────────────────────────────────────');
             resumo.push('');
-            resumo.push(`> TOTAL DE LOGS: ${logsMovimentacoes.length}`);
             
-            if (statusOperacao) {
-                resumo.push(`> ULTIMA OPERACAO: ${statusOperacao}`);
-            }
-            
-            // Se não há dados completos, mostrar mensagem explicativa
-            if (semDadosCompletos) {
-                resumo.push('');
-                resumo.push('> AVISO: Sincronizacao incompleta');
-                resumo.push('> O processo iniciou mas nao finalizou');
-                resumo.push('> Aguardando proxima execucao automatica');
-                resumo.push('');
-                resumo.push('> Dados esperados quando completar:');
-                resumo.push('>   - Tabela utilizada');
-                resumo.push('>   - Total de registros');
-                resumo.push('>   - Municipios no banco');
-                resumo.push('>   - Municipios no arquivo');
-                resumo.push('>   - Status de validacao');
+            if (statusDownload) {
+                resumo.push(`> DOWNLOAD: ${statusDownload}`);
             }
             
             if (tabelaUsada) {
@@ -1210,150 +1068,198 @@
                 resumo.push(`> MUNICIPIOS NO BANCO: ${municipiosBanco}`);
             }
             
-            if (municipiosArquivo) {
-                resumo.push(`> MUNICIPIOS NO ARQUIVO: ${municipiosArquivo}`);
+            if (statusMigracao) {
+                resumo.push(`> MIGRACAO: ${statusMigracao}`);
             }
             
-            if (municipiosBanco && municipiosArquivo) {
-                const diferenca = parseInt(municipiosBanco) - parseInt(municipiosArquivo);
-                if (diferenca > 0) {
-                    resumo.push(`> DIFERENCA: ${diferenca} municipio(s) a mais no banco`);
-                } else if (diferenca < 0) {
-                    resumo.push(`> DIFERENCA: ${Math.abs(diferenca)} municipio(s) a mais no arquivo`);
-                } else {
-                    resumo.push(`> DIFERENCA: 0 (sincronizado)`);
-                }
+            if (registrosInseridos) {
+                resumo.push(`> REGISTROS INSERIDOS: ${registrosInseridos}`);
             }
             
-            if (municipiosFaltando.length > 0) {
+            if (ultimaAtualizacao) {
                 resumo.push('');
-                resumo.push(`> MUNICIPIOS FALTANDO: ${municipiosFaltando.length}`);
-                municipiosFaltando.slice(0, 3).forEach(mun => {
-                    resumo.push(`>   - ${mun}`);
-                });
-                if (municipiosFaltando.length > 3) {
-                    resumo.push(`>   ... e mais ${municipiosFaltando.length - 3}`);
-                }
+                resumo.push(`> ULTIMA ATUALIZACAO: ${ultimaAtualizacao}`);
             }
             
-            if (logsMovimentacoes.length > 0) {
-                resumo.push('');
-                const ultimoLog = logsMovimentacoes[logsMovimentacoes.length - 1];
-                const horaAjustada = ajustarHorario(ultimoLog.data);
-                resumo.push(`> ULTIMA ATUALIZACAO: ${horaAjustada}`);
-            }
-            
-            resumo.push('> ========================================');
+            resumo.push('');
+            resumo.push('> ─────────────────────────────────────');
             
             return resumo.join('\n');
         }
 
-                // Função para processar logs de filtrar_discador_e_salvar_no_banco
+        // Função para processar logs de filtrar_discador_e_salvar_no_banco
         function processarLogsDiscador(data) {
             if (!data || !Array.isArray(data)) return '';
             
+            // Dicionários de STATUS e QUALIFICAÇÃO
+            const statusMap = {
+                5: 'Não atendida',
+                6: 'Abandonada',
+                7: 'Finalizada',
+                8: 'Falha',
+                9: 'CP pós',
+                15: 'CP pré'
+            };
+            
+            const qualificacaoMap = {
+                '-3': 'Caixa postal',
+                '-2': 'Não qualificado',
+                '127117': 'Retorno manual',
+                '127216': 'Gestão verificar',
+                '127218': 'Aceitou proposta',
+                '127219': 'Não aceitou proposta',
+                '127220': 'Conhecido passou',
+                '127221': 'Conhecido não passou',
+                '127222': 'Retorno para campanha',
+                '127223': 'Número errado',
+                '130654': 'Quer negociar',
+                '130657': 'Número errado estagnadas'
+            };
+            
             // Filtrar apenas logs de filtrar_discador_e_salvar_no_banco
-            const logsDiscador = data.filter(log => log.origem === 'filtrar_discador_e_salvar_no_banco');
+            const logsDiscador = data.filter(log => log && log.origem === 'filtrar_discador_e_salvar_no_banco');
             
             if (logsDiscador.length === 0) {
                 return '> Nenhuma operação de discador registrada';
             }
             
-            // Procurar pela última ligação processada (formato dicionário Python)
-            let ultimaLigacao = null;
-            let ultimaData = null;
-            let totalInseridos = 0;
-            let totalErros = 0;
+            // Procurar pelos ÚLTIMOS 10 logs (fixo)
+            let ultimosLogs = [];
             
-            for (let i = logsDiscador.length - 1; i >= 0; i--) {
+            for (let i = logsDiscador.length - 1; i >= 0 && ultimosLogs.length < 10; i--) {
                 const log = logsDiscador[i];
-                const msg = log.mensagem.trim();
+                if (!log || !log.mensagem) continue; // Segurança
+                const mensagem = log.mensagem.trim();
                 
-                // Contar sucessos e erros
-                if (msg.includes('Dados inceridos com sucesso') || msg.includes('Dados inseridos com sucesso')) {
-                    totalInseridos++;
-                }
-                if (msg.includes('erro ao incerir') || msg.includes('erro ao inserir')) {
-                    totalErros++;
-                }
-                
-                // Procurar por dicionário com dados da ligação
-                if (msg.startsWith('{') && msg.includes('numero') && msg.includes('id_negocio') && !ultimaLigacao) {
+                // Procurar por logs com dicionário Python (que contém os dados)
+                if (mensagem.startsWith('{') && mensagem.includes('numero') && mensagem.includes('status')) {
                     try {
-                        // Substituir aspas simples por aspas duplas e None por null
-                        const jsonStr = msg.replace(/'/g, '"').replace(/None/g, 'null').replace(/False/g, 'false').replace(/True/g, 'true');
-                        const dados = JSON.parse(jsonStr);
-                        ultimaLigacao = dados;
-                        ultimaData = ajustarHorario(log.data);
+                        // Converter dicionário Python para JSON
+                        let jsonStr = mensagem
+                            .replace(/'/g, '"')
+                            .replace(/None/g, 'null')
+                            .replace(/False/g, 'false')
+                            .replace(/True/g, 'true');
+                        
+                        // Tentar parsear
+                        const dadosDiscador = JSON.parse(jsonStr);
+                        ultimosLogs.unshift({
+                            dados: dadosDiscador,
+                            hora: ajustarHorario(log.data)
+                        });
                     } catch (e) {
-                        // Se não conseguir parsear, continuar procurando
+                        // Se falhar, tentar limpar caracteres problemáticos
+                        try {
+                            let jsonStr2 = mensagem
+                                .replace(/'/g, '"')
+                                .replace(/None/g, 'null')
+                                .replace(/False/g, 'false')
+                                .replace(/True/g, 'true')
+                                .replace(/[\u0080-\uFFFF]/g, (match) => {
+                                    return match;
+                                });
+                            
+                            const dadosDiscador = JSON.parse(jsonStr2);
+                            ultimosLogs.unshift({
+                                dados: dadosDiscador,
+                                hora: ajustarHorario(log.data)
+                            });
+                        } catch (e2) {
+                            // Continuar procurando
+                            continue;
+                        }
                     }
                 }
             }
             
             // Construir resumo
             let resumo = [];
-            resumo.push('> ========================================');
-            resumo.push('> RESUMO DE LIGAÇÕES DO DISCADOR');
-            resumo.push('> ========================================');
+            resumo.push('> ─────────────────────────────────────');
+            resumo.push('> [3] DISCADOR - ULTIMOS 10');
+            resumo.push('> ─────────────────────────────────────');
             
-            resumo.push(`> TOTAL DE LOGS: ${logsDiscador.length}`);
-            resumo.push(`> LIGAÇÕES REGISTRADAS: ${totalInseridos}`);
-            if (totalErros > 0) {
-                resumo.push(`> ERROS: ${totalErros}`);
-            }
-            resumo.push('');
-            
-            if (ultimaLigacao) {
-                resumo.push('> ÚLTIMA LIGAÇÃO PROCESSADA:');
-                resumo.push('');
+            if (ultimosLogs.length > 0) {
+                // Inverter para mostrar o mais recente embaixo (como terminal real)
+                ultimosLogs.reverse();
                 
-                if (ultimaLigacao.id_negocio) {
-                    resumo.push(`> ID NEGÓCIO: ${ultimaLigacao.id_negocio}`);
-                }
-                
-                if (ultimaLigacao.numero) {
-                    resumo.push(`> NÚMERO: ${ultimaLigacao.numero}`);
-                }
-                
-                if (ultimaLigacao.campanha) {
-                    resumo.push(`> CAMPANHA: ${ultimaLigacao.campanha}`);
-                }
-                
-                if (ultimaLigacao.data_formatada) {
-                    resumo.push(`> DATA DA LIGAÇÃO: ${ultimaLigacao.data_formatada}`);
-                }
-                
-                if (ultimaLigacao.status !== undefined) {
-                    const statusNome = ultimaLigacao.status === 8 ? 'Não atendida' : 
-                                       ultimaLigacao.status === 15 ? 'Bloqueada' : 
-                                       `Status ${ultimaLigacao.status}`;
-                    resumo.push(`> STATUS: ${statusNome}`);
-                }
-                
-                if (ultimaLigacao.tempo_da_ligacao !== undefined && ultimaLigacao.tempo_da_ligacao > 0) {
-                    resumo.push(`> TEMPO: ${ultimaLigacao.tempo_da_ligacao}s`);
-                }
-                
-                if (ultimaLigacao.modo) {
-                    resumo.push(`> MODO: ${ultimaLigacao.modo.toUpperCase()}`);
-                }
-                
-                if (ultimaData) {
-                    resumo.push(`> PROCESSADO EM: ${ultimaData}`);
-                }
+                // Mostrar os 5 últimos logs em formato compacto
+                ultimosLogs.forEach((logItem, index) => {
+                    const d = logItem.dados;
+                    const hora = logItem.hora.substring(11); // Apenas HH:MM:SS
+                    
+                    resumo.push('');
+                    
+                    // Linha 1: Hora | Número | Campanha
+                    const numero = d.numero || 'N/A';
+                    const campanha = d.campanha || 'N/A';
+                    resumo.push(`> [${hora}] ${numero} | ${campanha}`);
+                    
+                    // Linha 2: Agente | Status | Qual | Tempo | Modo
+                    const agente = d.agente || 'Sistema';
+                    const status = d.status !== undefined ? (statusMap[d.status] || `St${d.status}`) : 'N/A';
+                    
+                    let qual = 'Sem qual';
+                    if (d.qualificacao !== undefined && d.qualificacao !== null) {
+                        const qualId = String(d.qualificacao);
+                        qual = qualificacaoMap[qualId] || `Q${qualId}`;
+                    }
+                    
+                    const tempo = d.tempo_da_ligacao !== undefined ? `${d.tempo_da_ligacao}s` : '0s';
+                    const modo = d.modo ? d.modo.toUpperCase() : 'N/A';
+                    
+                    resumo.push(`> ${agente} | ${status} | ${qual} | ${tempo} | ${modo}`);
+                    
+                    // Separador entre logs (exceto no último)
+                    if (index < ultimosLogs.length - 1) {
+                        resumo.push('> ─────────');
+                    }
+                });
             } else {
-                resumo.push('> Nenhuma ligação encontrada nos logs');
-                resumo.push('> Formato esperado não detectado');
-            }
-            
-            if (logsDiscador.length > 0 && !ultimaData) {
+                // Se não conseguiu parsear, tentar mostrar o último log ao menos
                 const ultimoLog = logsDiscador[logsDiscador.length - 1];
-                const horaAjustada = ajustarHorario(ultimoLog.data);
-                resumo.push(`> ÚLTIMA ATUALIZAÇÃO: ${horaAjustada}`);
+                if (ultimoLog) {
+                    const mensagem = ultimoLog.mensagem.replace(/[🔍📊📥🔗✅❌⚠️💀👂👃]/g, '').trim();
+                    resumo.push('> Dados do ultimo log:');
+                    resumo.push('');
+                    
+                    // Tentar extrair informações básicas com regex
+                    const numeroMatch = mensagem.match(/'numero':\s*'([^']+)'/);
+                    const campanhaMatch = mensagem.match(/'campanha':\s*'([^']+)'/);
+                    const agenteMatch = mensagem.match(/'agente':\s*'([^']+)'/);
+                    const statusMatch = mensagem.match(/'status':\s*(\d+)/);
+                    const qualificacaoMatch = mensagem.match(/'qualificacao':\s*(-?\d+)/);
+                    const tempoMatch = mensagem.match(/'tempo_da_ligacao':\s*(\d+)/);
+                    const modoMatch = mensagem.match(/'modo':\s*'([^']+)'/);
+                    
+                    if (numeroMatch) resumo.push(`> NUMERO: ${numeroMatch[1]}`);
+                    if (campanhaMatch) resumo.push(`> CAMPANHA: ${campanhaMatch[1]}`);
+                    
+                    if (agenteMatch && agenteMatch[1] !== 'None') {
+                        resumo.push(`> AGENTE: ${agenteMatch[1]}`);
+                    } else {
+                        resumo.push(`> AGENTE: Sistema`);
+                    }
+                    
+                    if (statusMatch) {
+                        const statusTexto = statusMap[parseInt(statusMatch[1])] || `Status ${statusMatch[1]}`;
+                        resumo.push(`> STATUS: ${statusTexto}`);
+                    }
+                    
+                    if (qualificacaoMatch && qualificacaoMatch[1] !== 'None') {
+                        const qualId = qualificacaoMatch[1];
+                        const qualificacaoTexto = qualificacaoMap[qualId] || `Qualificacao ${qualId}`;
+                        resumo.push(`> QUALIFICACAO: ${qualificacaoTexto}`);
+                    } else {
+                        resumo.push(`> QUALIFICACAO: Sem qualificacao`);
+                    }
+                    
+                    if (tempoMatch) resumo.push(`> TEMPO DE LIGACAO: ${tempoMatch[1]}s`);
+                    if (modoMatch) resumo.push(`> MODO: ${modoMatch[1].toUpperCase()}`);
+                }
             }
             
-            resumo.push('> ========================================');
+            resumo.push('');
+            resumo.push('> ─────────────────────────────────────');
             
             return resumo.join('\n');
         }
@@ -1704,28 +1610,28 @@
         // Carregar logs ao carregar a página
         carregarLogs();
 
-        // Auto-refresh a cada 45 segundos
+        // Auto-refresh a cada 10 segundos para mais fluidez
         let autoRefreshInterval;
-        let countdown = 45;
-
+        let countdown = 10;
+        
         function iniciarAutoRefresh() {
             // Limpa intervalo anterior se existir
             if (autoRefreshInterval) {
                 clearInterval(autoRefreshInterval);
             }
-
+            
             // Atualiza imediatamente
             carregarLogs();
-
+            
             // Configura novo intervalo
             autoRefreshInterval = setInterval(() => {
                 carregarLogs();
-            }, 45000); // 45 segundos
+            }, 10000); // 10 segundos
 
             // Atualiza contador visual
             setInterval(() => {
                 countdown--;
-                if (countdown <= 0) countdown = 45;
+                if (countdown <= 0) countdown = 10;
                 document.getElementById('autoRefreshStatus').textContent = `[↻ ${countdown}s]`;
             }, 1000);
         }

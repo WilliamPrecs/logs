@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboards - Sistema de Monitoramento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #D4AF37;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Roboto Mono', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h3 {
+            color: #FFD700;
+            padding: 15px 20px;
+            text-align: center;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 2px 10px rgba(212, 175, 55, 0.1);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            margin: 0;
+        }
+
+        .nav-link {
+            float: right;
+            color: #D4AF37;
+            text-decoration: none;
+            font-size: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .dashboard-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        .dashboard-wrapper {
+            position: relative;
+            background: #000;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .dashboard-header {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            padding: 8px 15px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            color: #D4AF37;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-iframe {
+            width: 100%;
+            height: calc(100% - 40px);
+            border: none;
+            background: #000;
+        }
+
+        .btn-fullscreen {
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #D4AF37;
+            padding: 3px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-fullscreen:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Efeito de scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <h3>
+        DASHBOARDS POWER BI
+        <a href="index.html" class="nav-link">🖥️ TERMINAIS</a>
+    </h3>
+
+    <div class="dashboard-container">
+        <!-- Dashboard Mensal -->
+        <div class="dashboard-wrapper">
+            <div class="dashboard-header">
+                <span>📊 DASHBOARD MENSAL</span>
+                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/mensalPowerBI/')">⛶ TELA CHEIA</button>
+            </div>
+            <iframe class="dashboard-iframe" src="https://williamprecs.github.io/mensalPowerBI/" frameborder="0"></iframe>
+        </div>
+
+        <!-- Dashboard Comercial -->
+        <div class="dashboard-wrapper">
+            <div class="dashboard-header">
+                <span>📈 DASHBOARD COMERCIAL</span>
+                <button class="btn-fullscreen" onclick="abrirFullscreen('https://williamprecs.github.io/comercialPrecsPowerBI/')">⛶ TELA CHEIA</button>
+            </div>
+            <iframe class="dashboard-iframe" src="https://williamprecs.github.io/comercialPrecsPowerBI/" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <script>
+        function abrirFullscreen(url) {
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
+
