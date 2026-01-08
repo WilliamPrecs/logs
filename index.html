@@ -1142,6 +1142,7 @@
             // Determinar status geral do sistema
             let statusGeral = 'PROCESSANDO';
             let indicador = '[...]';
+            let semDadosCompletos = !tabelaUsada && !totalRegistros && !municipiosBanco;
             
             if (statusOperacao === 'Operação cancelada' || statusOperacao === 'Validação falhou') {
                 statusGeral = 'ERRO';
@@ -1152,7 +1153,7 @@
             } else if (municipiosFaltando.length > 0) {
                 statusGeral = 'ALERTA';
                 indicador = '[!]';
-            } else if (!statusOperacao && logsMovimentacoes.length === 1) {
+            } else if (semDadosCompletos || (statusOperacao && statusOperacao.includes('Baixando'))) {
                 statusGeral = 'AGUARDANDO';
                 indicador = '[~]';
             }
@@ -1180,6 +1181,21 @@
             
             if (statusOperacao) {
                 resumo.push(`> ULTIMA OPERACAO: ${statusOperacao}`);
+            }
+            
+            // Se não há dados completos, mostrar mensagem explicativa
+            if (semDadosCompletos) {
+                resumo.push('');
+                resumo.push('> AVISO: Sincronizacao incompleta');
+                resumo.push('> O processo iniciou mas nao finalizou');
+                resumo.push('> Aguardando proxima execucao automatica');
+                resumo.push('');
+                resumo.push('> Dados esperados quando completar:');
+                resumo.push('>   - Tabela utilizada');
+                resumo.push('>   - Total de registros');
+                resumo.push('>   - Municipios no banco');
+                resumo.push('>   - Municipios no arquivo');
+                resumo.push('>   - Status de validacao');
             }
             
             if (tabelaUsada) {
