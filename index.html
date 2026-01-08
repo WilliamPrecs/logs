@@ -323,6 +323,12 @@
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0.3; }
         }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
 
         /* Removido efeito visual */
         body::after {
@@ -1296,6 +1302,88 @@
             return texto.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
         }
 
+        function verificarAtrasoTerminal(data, origem) {
+            // Verifica se logs de um terminal específico estão desatualizados
+            if (!data || !Array.isArray(data)) return false;
+            
+            // Filtrar logs da origem específica
+            const logsDaOrigem = data.filter(log => {
+                if (!log || !log.origem) return false;
+                if (origem === 'ServidorDashboardComercial') {
+                    return log.origem === 'ServidorDashboardComercial';
+                } else if (origem === 'movimentacoesWilliam') {
+                    return log.origem === 'movimentacoesWilliam';
+                } else if (origem === 'filtrar_discador_e_salvar_no_banco') {
+                    return log.origem === 'filtrar_discador_e_salvar_no_banco';
+                }
+                return false;
+            });
+            
+            if (logsDaOrigem.length === 0) return false;
+            
+            const agora = new Date();
+            const logMaisRecente = logsDaOrigem[logsDaOrigem.length - 1];
+            
+            if (logMaisRecente && logMaisRecente.data) {
+                try {
+                    const dataLog = new Date(logMaisRecente.data);
+                    const diferencaMs = agora - dataLog;
+                    const diferencaMinutos = diferencaMs / (1000 * 60);
+                    
+                    console.log(`[${origem}] Último log: ${logMaisRecente.data}, Atraso: ${diferencaMinutos.toFixed(2)} min`);
+                    
+                    return diferencaMinutos > 30; // Alerta se passar de 30 minutos
+                } catch (e) {
+                    console.error(`Erro ao verificar atraso de ${origem}:`, e);
+                    return false;
+                }
+            }
+            
+            return false;
+        }
+        
+        function mostrarAlertaTerminal(terminalId) {
+            const card = document.getElementById(`card-${terminalId}`);
+            if (!card) return;
+            
+            // Remove alerta anterior se existir
+            const alertaExistente = card.querySelector('.alerta-terminal');
+            if (alertaExistente) return; // Já existe
+            
+            // Cria container de alerta no topo (logo abaixo do header)
+            const alerta = document.createElement('div');
+            alerta.className = 'alerta-terminal';
+            alerta.innerHTML = `
+                <div style="font-size: 80px; margin-bottom: 5px;">⚠️</div>
+                <div style="font-size: 14px; color: #ffff00; font-weight: bold;">LOGS DESATUALIZADOS</div>
+                <div style="font-size: 11px; color: #ffff00;">&gt; 30 minutos sem atualizar</div>
+            `;
+            alerta.style.cssText = `
+                position: absolute;
+                top: 50px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 1000;
+                opacity: 0.9;
+                animation: pulse 1.5s infinite;
+                pointer-events: none;
+                text-align: center;
+            `;
+            card.appendChild(alerta);
+            
+            console.log(`Alerta adicionado ao terminal: ${terminalId}`);
+        }
+        
+        function removerAlertaTerminal(terminalId) {
+            const card = document.getElementById(`card-${terminalId}`);
+            if (!card) return;
+            
+            const alertaExistente = card.querySelector('.alerta-terminal');
+            if (alertaExistente) {
+                alertaExistente.remove();
+            }
+        }
+        
         async function carregarLogs() {
             const logsEl = document.getElementById('logs');
             const terminalEl = document.getElementById('terminal');
@@ -1407,6 +1495,29 @@
                             });
                         }
                     }
+                }
+                
+                // Verificar terminais que precisam de alerta
+                const MODO_TESTE = false; // Modo produção
+                
+                // Terminal 1 - Metas Diárias
+                const temAtrasoMetas = verificarAtrasoTerminal(data, 'ServidorDashboardComercial');
+                console.log('[Terminal 1] Tem atraso:', temAtrasoMetas);
+                if (MODO_TESTE || temAtrasoMetas) {
+                    mostrarAlertaTerminal('logs');
+                } else {
+                    removerAlertaTerminal('logs');
+                }
+                
+                // Terminal 2 - Saldo em Conta (não precisa de alerta)
+                
+                // Terminal 3 - Discador
+                const temAtrasoDiscador = verificarAtrasoTerminal(data, 'filtrar_discador_e_salvar_no_banco');
+                console.log('[Terminal 3] Tem atraso:', temAtrasoDiscador);
+                if (MODO_TESTE || temAtrasoDiscador) {
+                    mostrarAlertaTerminal('terminal2');
+                } else {
+                    removerAlertaTerminal('terminal2');
                 }
                 
                 // Marca que a primeira carga foi concluída
