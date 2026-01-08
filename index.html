@@ -1109,31 +1109,51 @@
             let municipiosFaltando = [];
             let statusOperacao = null;
             
-            // Processar logs em ordem reversa (mais recentes primeiro)
+            // Processar TODOS os logs para coletar todas as informações disponíveis
             for (let i = logsMovimentacoes.length - 1; i >= 0; i--) {
                 const log = logsMovimentacoes[i];
                 const msg = log.mensagem.replace(/[🔍📊📥🔗✅❌⚠️]/g, '').trim(); // Remove emojis
                 
-                if (msg.includes('Download concluído')) {
-                    statusOperacao = 'Download concluído';
-                } else if (msg.includes('Conectando ao SQLite')) {
-                    statusOperacao = 'Conectado ao SQLite';
-                } else if (msg.includes('Conectando ao PostgreSQL')) {
-                    statusOperacao = 'Conectado ao PostgreSQL';
-                } else if (msg.includes('Usando tabela:')) {
-                    tabelaUsada = msg.split(':')[1]?.trim() || 'N/A';
-                } else if (msg.includes('Total de registros:')) {
-                    totalRegistros = msg.split(':')[1]?.trim() || 'N/A';
-                } else if (msg.includes('Municípios no banco de dados:')) {
-                    municipiosBanco = msg.split(':')[1]?.trim() || 'N/A';
-                } else if (msg.includes('Municípios no arquivo:')) {
-                    municipiosArquivo = msg.split(':')[1]?.trim() || 'N/A';
-                } else if (msg.includes('VALIDAÇÃO FALHOU')) {
-                    statusOperacao = 'Validação falhou';
-                } else if (msg.includes('Operação cancelada')) {
-                    statusOperacao = 'Operação cancelada';
-                } else if (msg.startsWith('- ') && statusOperacao === 'Validação falhou') {
-                    municipiosFaltando.push(msg.replace('- ', '').trim());
+                // Buscar status da operação (priorizar mais recente)
+                if (!statusOperacao) {
+                    if (msg.includes('Download concluído')) {
+                        statusOperacao = 'Download concluído';
+                    } else if (msg.includes('Conectando ao SQLite')) {
+                        statusOperacao = 'Conectado ao SQLite';
+                    } else if (msg.includes('Conectando ao PostgreSQL')) {
+                        statusOperacao = 'Conectado ao PostgreSQL';
+                    } else if (msg.includes('VALIDAÇÃO FALHOU')) {
+                        statusOperacao = 'Validação falhou';
+                    } else if (msg.includes('Operação cancelada')) {
+                        statusOperacao = 'Operação cancelada';
+                    } else if (msg.includes('Baixando arquivo')) {
+                        statusOperacao = 'Baixando arquivo do S3';
+                    }
+                }
+                
+                // Buscar todas as outras informações (pegar qualquer ocorrência)
+                if (!tabelaUsada && msg.includes('Usando tabela:')) {
+                    tabelaUsada = msg.split(':')[1]?.trim() || null;
+                }
+                
+                if (!totalRegistros && msg.includes('Total de registros:')) {
+                    totalRegistros = msg.split(':')[1]?.trim() || null;
+                }
+                
+                if (!municipiosBanco && (msg.includes('Municípios no banco de dados:') || msg.includes('Municipios no banco de dados:'))) {
+                    municipiosBanco = msg.split(':')[1]?.trim() || null;
+                }
+                
+                if (!municipiosArquivo && (msg.includes('Municípios no arquivo:') || msg.includes('Municipios no arquivo:'))) {
+                    municipiosArquivo = msg.split(':')[1]?.trim() || null;
+                }
+                
+                // Coletar municípios faltando (durante validação falha)
+                if (msg.startsWith('- ') && (statusOperacao === 'Validação falhou' || msg.match(/^- [A-Z]/))) {
+                    const municipio = msg.replace('- ', '').trim();
+                    if (municipio && !municipiosFaltando.includes(municipio)) {
+                        municipiosFaltando.push(municipio);
+                    }
                 }
             }
             
